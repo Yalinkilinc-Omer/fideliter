@@ -3,6 +3,46 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import QRCode from 'qrcode'
+
+// QR code component shown on customer card for business to scan
+function CustomerQRCode({ customerId }: { customerId: string }) {
+  const [qr, setQr] = useState('')
+  const [show, setShow] = useState(false)
+
+  useEffect(() => {
+    if (show && !qr) {
+      QRCode.toDataURL(customerId, { width: 200, margin: 2 }).then(setQr)
+    }
+  }, [show, customerId, qr])
+
+  return (
+    <div className="bg-white/10 rounded-2xl p-4 text-center">
+      <button
+        onClick={() => setShow(!show)}
+        className="text-slate-300 text-sm font-medium flex items-center gap-2 mx-auto"
+      >
+        <span>📱</span>
+        {show ? 'Masquer mon QR code' : 'Afficher mon QR code (pour le commerce)'}
+      </button>
+      {show && (
+        <div className="mt-3">
+          {qr ? (
+            <img src={qr} alt="QR client" className="mx-auto rounded-xl" />
+          ) : (
+            <div className="w-[200px] h-[200px] bg-white/10 rounded-xl mx-auto animate-pulse" />
+          )}
+          <p className="text-slate-400 text-xs mt-2">
+            Montrez ce QR au commerce pour recevoir un tampon
+          </p>
+          <p className="text-slate-500 text-xs mt-1 font-mono">
+            #{customerId.slice(-8).toUpperCase()}
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
 
 interface Business {
   name: string
@@ -329,11 +369,9 @@ export default function CustomerCardView({ mode, loyaltyCard, customerCard: init
           </div>
         )}
 
-        {/* Card ID for reference */}
-        {customerCard && (
-          <p className="text-center text-slate-500 text-xs">
-            Carte #{customerCard.id.slice(-8).toUpperCase()}
-          </p>
+        {/* QR Code for business to scan */}
+        {(mode === 'view' || enrolled) && customerCard && (
+          <CustomerQRCode customerId={customerCard.id} />
         )}
       </div>
     </div>

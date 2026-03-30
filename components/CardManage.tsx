@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import QRCode from 'qrcode'
 import { LoyaltyCard, CustomerCard } from '@/lib/types'
@@ -19,6 +19,59 @@ export default function CardManage({ card, customers: initialCustomers, baseUrl 
   const [addingStamp, setAddingStamp] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [tab, setTab] = useState<'customers' | 'qr'>('customers')
+  const [scanMode, setScanMode] = useState(false)
+  const [scanResult, setScanResult] = useState<string | null>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const streamRef = useRef<MediaStream | null>(null)
+
+  const startScanner = async () => {
+    setScanMode(true)
+    setScanResult(null)
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+      streamRef.current = stream
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+        videoRef.current.play()
+      }
+      // Use jsQR to decode frames
+      const jsQR = (await import('jsqr')).default
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')!
+      const scan = () => {
+        if (!videoRef.current || !scanMode) return
+        canvas.width = videoRef.current.videoWidth
+        canvas.height = videoRef.current.videoHeight
+        ctx.drawImage(videoRef.current, 0, 0)
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+        const code = jsQR(imageData.data, canvas.width, canvas.height)
+        if (code?.data) {
+          stopScanner()
+          // code.data is the customer_card_id
+          const customerId = code.data
+          const customer = customers.find(c => c.id === customerId)
+          if (customer) {
+            setScanResult(`✅ Client trouvé : ${customer.customer_name || customer.customer_email || 'Anonyme'}`)
+            addStamp(customerId, card.type === 'stamps' ? 'stamp' : 'points', card.type === 'stamps' ? 1 : 10)
+          } else {
+            setScanResult('❌ Client non trouvé sur cette carte')
+          }
+        } else {
+          requestAnimationFrame(scan)
+        }
+      }
+      if (videoRef.current) videoRef.current.onloadeddata = () => requestAnimationFrame(scan)
+    } catch {
+      setScanMode(false)
+      alert('Impossible d\'accéder à la caméra')
+    }
+  }
+
+  const stopScanner = () => {
+    streamRef.current?.getTracks().forEach(t => t.stop())
+    streamRef.current = null
+    setScanMode(false)
+  }
 
   const cardUrl = `${baseUrl}/card/${card.id}`
 
@@ -195,7 +248,37 @@ export default function CardManage({ card, customers: initialCustomers, baseUrl 
           <div className="p-5 border-b border-slate-100">
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-semibold text-gray-800">Clients ({customers.length})</h2>
+              <button
+                onClick={scanMode ? stopScanner : startScanner}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition ${
+                  scanMode
+                    ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                    : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
+                }`}
+              >
+                <span>{scanMode ? '⏹' : '📷'}</span>
+                {scanMode ? 'Arrêter' : 'Scanner QR'}
+              </button>
             </div>
+
+            {/* Camera scanner */}
+            {scanMode && (
+              <div className="mb-3 rounded-xl overflow-hidden bg-black relative">
+                <video ref={videoRef} className="w-full rounded-xl" playsInline muted />
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-48 h-48 border-2 border-white/70 rounded-xl"></div>
+                </div>
+                <p className="text-center text-white text-xs py-2 bg-black/50">Pointez vers le QR code du client</p>
+              </div>
+            )}
+            {scanResult && (
+              <div className={`mb-3 px-3 py-2 rounded-xl text-sm font-medium ${
+                scanResult.startsWith('✅') ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
+              }`}>
+                {scanResult}
+              </div>
+            )}
+
             <input
               type="text"
               value={search}

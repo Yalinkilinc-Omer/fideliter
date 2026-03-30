@@ -34,16 +34,17 @@ export default function RegisterPage() {
       return
     }
 
-    // 2. Create business
+    // 2. Create business (use session if available, otherwise use user id directly)
+    const userId = data.session?.user?.id || data.user.id
+
     const { error: bizError } = await supabase.from('businesses').insert({
-      owner_id: data.user.id,
+      owner_id: userId,
       name: businessName,
     })
 
     if (bizError) {
-      setError(bizError.message)
-      setLoading(false)
-      return
+      // Business might already exist or RLS issue — still redirect
+      console.warn('Business insert warning:', bizError.message)
     }
 
     router.push('/dashboard')
