@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import QRCode from 'qrcode'
+import WalletButtons from '@/components/WalletButtons'
 
 function CustomerQRCode({ customerId }: { customerId: string }) {
   const [qr, setQr] = useState('')
@@ -297,6 +298,11 @@ export default function CustomerCardView({ mode, loyaltyCard, customerCard: init
         {/* QR Code client */}
         {(mode === 'view' || enrolled) && customerCard && (
           <CustomerQRCode customerId={customerCard.id} />
+        )}
+
+        {/* Boutons Apple Wallet / Google Wallet */}
+        {(mode === 'view' || enrolled) && customerCard && (
+          <WalletButtons customerCardId={customerCard.id} />
         )}
 
         {/* Info points */}

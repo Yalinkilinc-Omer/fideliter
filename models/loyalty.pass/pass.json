@@ -1,0 +1,66 @@
+{
+  "formatVersion": 1,
+  "passTypeIdentifier": "pass.com.fideliter.loyalty",
+  "serialNumber": "PLACEHOLDER",
+  "teamIdentifier": "TEAMID",
+  "organizationName": "Digital Fidélité",
+  "description": "Carte de fidélité",
+  "logoText": "Fidélité",
+  "backgroundColor": "rgb(99, 102, 241)",
+  "foregroundColor": "rgb(255, 255, 255)",
+  "labelColor": "rgb(220, 220, 255)",
+  "storeCard": {
+    "primaryFields": [
+      {
+        "key": "balance",
+        "label": "Solde",
+        "value": "0 pts",
+        "textAlignment": "PKTextAlignmentLeft"
+      }
+    ],
+    "secondaryFields": [
+      {
+        "key": "name",
+        "label": "Client",
+        "value": "-"
+      },
+      {
+        "key": "visits",
+        "label": "Visites",
+        "value": "0"
+      }
+    ],
+    "auxiliaryFields": [
+      {
+        "key": "reward",
+        "label": "Récompense",
+        "value": "-"
+      }
+    ],
+    "backFields": [
+      {
+        "key": "info",
+        "label": "Comment ça marche",
+        "value": "1€ dépensé = 1 point. Accumulez des points pour obtenir des récompenses."
+      },
+      {
+        "key": "terms",
+        "label": "Conditions",
+        "value": "Cette carte est nominative et non transférable. Valable dans l'établissement uniquement."
+      }
+    ]
+  },
+  "barcodes": [
+    {
+      "format": "PKBarcodeFormatQR",
+      "message": "PLACEHOLDER",
+      "messageEncoding": "iso-8859-1",
+      "altText": "Votre carte fidélité"
+    }
+  ],
+  "barcode": {
+    "format": "PKBarcodeFormatQR",
+    "message": "PLACEHOLDER",
+    "messageEncoding": "iso-8859-1"
+  }
+}
