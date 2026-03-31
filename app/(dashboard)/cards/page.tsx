@@ -14,10 +14,7 @@ export default async function CardsPage() {
 
   const { data: cards } = await supabase
     .from('loyalty_cards')
-    .select(`
-      *,
-      customer_cards(count)
-    `)
+    .select(`*, customer_cards(count)`)
     .eq('business_id', business?.id || '')
     .order('created_at', { ascending: false })
 
@@ -30,7 +27,7 @@ export default async function CardsPage() {
           <p className="text-gray-500 mt-1">Gérez vos programmes de fidélité</p>
         </div>
         <Link
-          href="/dashboard/cards/new"
+          href="/cards/new"
           className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-medium hover:bg-indigo-700 transition shadow-sm"
         >
           <span>➕</span>
@@ -47,22 +44,19 @@ export default async function CardsPage() {
               <div key={card.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-shadow">
                 {/* Card preview */}
                 <div
-                  className="h-32 flex items-center justify-center relative"
+                  className="h-36 flex items-center justify-center relative"
                   style={{ backgroundColor: card.card_color }}
                 >
-                  <div className="text-center" style={{ color: card.card_text_color }}>
-                    <p className="font-bold text-lg">{card.name}</p>
+                  <div className="text-center px-4" style={{ color: card.card_text_color }}>
+                    <p className="font-bold text-xl mb-1">{card.name}</p>
                     <p className="text-sm opacity-80">
                       {card.type === 'stamps'
-                        ? `${card.max_stamps} tampons`
-                        : 'Système de points'}
+                        ? `🔖 ${card.max_stamps} tampons`
+                        : `⭐ ${card.points_for_reward ?? 750} pts = 1€`}
                     </p>
                   </div>
-                  {/* Status badge */}
                   <div className={`absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-medium ${
-                    card.is_active
-                      ? 'bg-white/20 text-white'
-                      : 'bg-black/20 text-white'
+                    card.is_active ? 'bg-white/20 text-white' : 'bg-black/20 text-white'
                   }`}>
                     {card.is_active ? '✅ Active' : '⏸ Inactive'}
                   </div>
@@ -73,7 +67,9 @@ export default async function CardsPage() {
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-gray-500">👥</span>
-                      <span className="text-sm font-medium text-gray-700">{customerCount} client{customerCount > 1 ? 's' : ''}</span>
+                      <span className="text-sm font-medium text-gray-700">
+                        {customerCount} client{customerCount !== 1 ? 's' : ''}
+                      </span>
                     </div>
                     <span className="text-xs text-gray-400">
                       {new Date(card.created_at).toLocaleDateString('fr-FR')}
@@ -88,7 +84,7 @@ export default async function CardsPage() {
 
                   <div className="flex gap-2">
                     <Link
-                      href={`/dashboard/cards/${card.id}`}
+                      href={`/cards/${card.id}`}
                       className="flex-1 text-center bg-indigo-50 text-indigo-700 px-3 py-2 rounded-xl text-sm font-medium hover:bg-indigo-100 transition"
                     >
                       Gérer
@@ -108,7 +104,7 @@ export default async function CardsPage() {
             Créez votre première carte de fidélité et commencez à récompenser vos clients
           </p>
           <Link
-            href="/dashboard/cards/new"
+            href="/cards/new"
             className="inline-flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-indigo-700 transition"
           >
             <span>➕</span>

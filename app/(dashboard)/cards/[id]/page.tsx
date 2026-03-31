@@ -30,7 +30,7 @@ export default async function CardDetailPage({ params }: { params: Promise<{ id:
     <div className="p-8">
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">
-        <Link href="/dashboard/cards" className="p-2 hover:bg-slate-100 rounded-xl transition text-gray-600">
+        <Link href="/cards" className="p-2 hover:bg-slate-100 rounded-xl transition text-gray-600">
           ←
         </Link>
         <div>

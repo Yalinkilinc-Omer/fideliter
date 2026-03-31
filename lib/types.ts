@@ -14,6 +14,8 @@ export interface LoyaltyCard {
   name: string
   type: 'stamps' | 'points'
   max_stamps: number
+  points_per_euro: number   // 1€ dépensé = N points (default 1)
+  points_for_reward: number // N points = 1€ de récompense (default 750)
   card_color: string
   card_text_color: string
   reward_description: string
@@ -31,6 +33,7 @@ export interface CustomerCard {
   customer_phone: string
   stamps_count: number
   points: number
+  points_redeemed: number  // total points rachetés cumulés
   total_visits: number
   enrolled_at: string
   last_activity: string

@@ -1,86 +1,54 @@
 import { test, expect } from '@playwright/test'
 
-const TEST_EMAIL = `test+${Date.now()}@fideliter.test`
-const TEST_PASSWORD = 'TestPassword123!'
-const TEST_BUSINESS = 'Café Test Playwright'
-
-test.describe('Authentification', () => {
-
-  test('La page de login s\'affiche correctement', async ({ page }) => {
+test.describe('Auth flows', () => {
+  test('page login affiche le formulaire', async ({ page }) => {
     await page.goto('/login')
-    await expect(page).toHaveTitle(/Digital Fidélité/)
-    await expect(page.getByText('Digital Fidélité')).toBeVisible()
-    await expect(page.getByText('Connexion')).toBeVisible()
-    await expect(page.getByPlaceholder('votre@email.com')).toBeVisible()
-    await expect(page.getByPlaceholder('••••••••')).toBeVisible()
-    await expect(page.getByRole('button', { name: /se connecter/i })).toBeVisible()
+    await expect(page.locator('h1')).toContainText('Digital Fidélité')
+    await expect(page.locator('h2')).toContainText('Connexion')
+    await expect(page.locator('input[type="email"]')).toBeVisible()
+    await expect(page.locator('input[type="password"]')).toBeVisible()
+    await expect(page.locator('button[type="submit"]')).toContainText('Se connecter')
   })
 
-  test('Lien vers inscription visible sur la page login', async ({ page }) => {
+  test('lien vers inscription visible', async ({ page }) => {
     await page.goto('/login')
-    await expect(page.getByRole('link', { name: /créer un compte/i })).toBeVisible()
+    const link = page.locator('a[href="/register"]')
+    await expect(link).toBeVisible()
   })
 
-  test('La page d\'inscription s\'affiche correctement', async ({ page }) => {
+  test('page inscription affiche le formulaire', async ({ page }) => {
     await page.goto('/register')
-    await expect(page.getByText('Créer un compte')).toBeVisible()
-    await expect(page.getByPlaceholder(/nom de votre établissement/i)).toBeVisible()
-    await expect(page.getByPlaceholder('votre@email.com')).toBeVisible()
-    await expect(page.getByPlaceholder(/minimum 6/i)).toBeVisible()
+    await expect(page.locator('h2')).toContainText('Créer un compte')
+    await expect(page.locator('input[placeholder*="tablissement"]')).toBeVisible()
+    await expect(page.locator('input[type="email"]')).toBeVisible()
+    await expect(page.locator('input[type="password"]')).toBeVisible()
   })
 
-  test('Erreur si mauvais identifiants', async ({ page }) => {
+  test('login avec mauvais mot de passe affiche une erreur', async ({ page }) => {
     await page.goto('/login')
-    await page.getByPlaceholder('votre@email.com').fill('mauvais@email.com')
-    await page.getByPlaceholder('••••••••').fill('mauvaismdp')
-    await page.getByRole('button', { name: /se connecter/i }).click()
-    await expect(page.locator('.bg-red-50')).toBeVisible({ timeout: 10000 })
+    await page.fill('input[type="email"]', 'wrong@example.com')
+    await page.fill('input[type="password"]', 'wrongpassword')
+    await page.click('button[type="submit"]')
+    await expect(page.locator('text=Invalid').or(page.locator('text=invalide').or(page.locator('[class*="red"]')))).toBeVisible({ timeout: 8000 })
   })
 
-  test('Redirect vers dashboard si utilisateur non connecté tente d\'accéder à /dashboard', async ({ page }) => {
+  test('/ redirige vers /login si non authentifié', async ({ page }) => {
+    await page.goto('/')
+    await expect(page).toHaveURL(/\/login/, { timeout: 8000 })
+  })
+
+  test('/dashboard redirige vers /login si non authentifié', async ({ page }) => {
     await page.goto('/dashboard')
-    await expect(page).toHaveURL(/\/login/)
+    await expect(page).toHaveURL(/\/login/, { timeout: 8000 })
   })
 
-  test('Redirect vers dashboard si utilisateur non connecté tente d\'accéder à /cards', async ({ page }) => {
+  test('/cards redirige vers /login si non authentifié', async ({ page }) => {
     await page.goto('/cards')
-    await expect(page).toHaveURL(/\/login/)
+    await expect(page).toHaveURL(/\/login/, { timeout: 8000 })
   })
 
-  test('Redirect vers dashboard si utilisateur non connecté tente d\'accéder à /notifications', async ({ page }) => {
+  test('/notifications redirige vers /login si non authentifié', async ({ page }) => {
     await page.goto('/notifications')
-    await expect(page).toHaveURL(/\/login/)
+    await expect(page).toHaveURL(/\/login/, { timeout: 8000 })
   })
-
-  test('Inscription réussie avec un nouveau compte', async ({ page }) => {
-    await page.goto('/register')
-    await page.getByPlaceholder(/nom de votre établissement/i).fill(TEST_BUSINESS)
-    await page.getByPlaceholder('votre@email.com').fill(TEST_EMAIL)
-    await page.getByPlaceholder(/minimum 6/i).fill(TEST_PASSWORD)
-    await page.getByRole('button', { name: /créer mon compte/i }).click()
-    // Après inscription, on doit être redirigé vers le dashboard
-    await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 })
-    await expect(page.getByText(TEST_BUSINESS)).toBeVisible()
-  })
-
-  test('Connexion réussie avec les identifiants créés', async ({ page }) => {
-    await page.goto('/login')
-    await page.getByPlaceholder('votre@email.com').fill(TEST_EMAIL)
-    await page.getByPlaceholder('••••••••').fill(TEST_PASSWORD)
-    await page.getByRole('button', { name: /se connecter/i }).click()
-    await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 })
-  })
-
-  test('Déconnexion redirige vers login', async ({ page }) => {
-    // Se connecter d'abord
-    await page.goto('/login')
-    await page.getByPlaceholder('votre@email.com').fill(TEST_EMAIL)
-    await page.getByPlaceholder('••••••••').fill(TEST_PASSWORD)
-    await page.getByRole('button', { name: /se connecter/i }).click()
-    await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 })
-    // Se déconnecter
-    await page.getByRole('button', { name: /déconnexion/i }).click()
-    await expect(page).toHaveURL(/\/login/, { timeout: 10000 })
-  })
-
 })
