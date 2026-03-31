@@ -47,7 +47,7 @@ export default function RegisterPage() {
       console.warn('Business insert warning:', bizError.message)
     }
 
-    router.push('/dashboard')
+    router.push('/onboarding')
     router.refresh()
   }
 
