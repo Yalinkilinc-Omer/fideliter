@@ -8,21 +8,22 @@ test.describe('Cartes fidélité', () => {
 
   test('page /cards accessible après connexion', async ({ page }) => {
     await page.goto('/cards')
-    await expect(page.locator('h1')).toContainText('cartes')
+    await expect(page.getByRole('heading', { name: /cartes/ })).toBeVisible()
     await expect(page).not.toHaveURL(/\/login/)
   })
 
   test('bouton Nouvelle carte visible sur /cards', async ({ page }) => {
     await page.goto('/cards')
-    await expect(page.locator('a[href="/cards/new"]')).toBeVisible()
+    const createCardLink = page.locator('a[href="/cards/new"]').first()
+    await expect(createCardLink).toBeVisible()
   })
 
   test('page /cards/new affiche le formulaire', async ({ page }) => {
     await page.goto('/cards/new')
-    await expect(page.locator('h1')).toContainText('Nouvelle carte')
+    await expect(page.getByRole('heading', { name: /Nouvelle carte/ })).toBeVisible()
     await expect(page.locator('input[placeholder*="Carte"]')).toBeVisible()
-    await expect(page.locator('text=Tampons')).toBeVisible()
-    await expect(page.locator('text=Points')).toBeVisible()
+    await expect(page.getByRole('button', { name: /Tampons/ })).toBeVisible()
+    await expect(page.getByRole('button', { name: /Points/ })).toBeVisible()
   })
 
   test('création carte tampons', async ({ page }) => {
@@ -31,17 +32,17 @@ test.describe('Cartes fidélité', () => {
     await page.click('button:has-text("Tampons")')
     await page.click('button[type="submit"]')
     await page.waitForURL(/\/cards\/[^/?]+$/, { timeout: 15000 })
-    await expect(page.locator('h1')).toContainText('Carte Test Tampons')
+    await expect(page.getByRole('heading', { name: /Carte Test Tampons/ })).toBeVisible()
   })
 
   test('création carte points avec seuil 750', async ({ page }) => {
     await page.goto('/cards/new')
     await page.fill('input[placeholder*="Carte"]', 'Carte Test Points')
     await page.click('button:has-text("Points")')
-    await expect(page.locator('text=750')).toBeVisible()
+    await expect(page.getByText('750 pts', { exact: true }).first()).toBeVisible()
     await page.click('button[type="submit"]')
     await page.waitForURL(/\/cards\/[^/?]+$/, { timeout: 15000 })
-    await expect(page.locator('h1')).toContainText('Carte Test Points')
+    await expect(page.getByRole('heading', { name: /Carte Test Points/ })).toBeVisible()
   })
 
   test('QR code inscription affiché sur la page carte', async ({ page }) => {

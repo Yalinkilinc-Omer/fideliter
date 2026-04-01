@@ -8,7 +8,7 @@ test.describe('Notifications push', () => {
 
   test('page /notifications accessible', async ({ page }) => {
     await page.goto('/notifications')
-    await expect(page.locator('h1')).toContainText('Notifications')
+    await expect(page.getByRole('heading', { name: /Notifications/ })).toBeVisible()
     await expect(page).not.toHaveURL(/\/login/)
   })
 

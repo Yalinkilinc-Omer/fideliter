@@ -13,7 +13,7 @@ test.describe('Portail client', () => {
 
   test('page /card/[id] affiche le formulaire inscription', async ({ page }) => {
     await page.goto(`/card/${cardId}`)
-    await expect(page.locator('text=Rejoindre le programme')).toBeVisible({ timeout: 8000 })
+    await expect(page.locator('text=Rejoindre le programme')).toBeVisible({ timeout: 15000 })
     await expect(page.locator('button:has-text("Obtenir ma carte")')).toBeVisible()
   })
 

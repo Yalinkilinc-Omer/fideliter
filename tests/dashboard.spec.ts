@@ -38,14 +38,14 @@ test.describe('Dashboard', () => {
     await page.goto('/dashboard')
     await page.click('a[href="/cards"]')
     await expect(page).toHaveURL(/\/cards$/)
-    await expect(page.locator('h1')).toContainText('cartes')
+    await expect(page.getByRole('heading', { name: /cartes/ })).toBeVisible()
   })
 
   test('nav Notifications fonctionne', async ({ page }) => {
     await page.goto('/dashboard')
     await page.click('a[href="/notifications"]')
     await expect(page).toHaveURL(/\/notifications$/)
-    await expect(page.locator('h1')).toContainText('Notifications')
+    await expect(page.getByRole('heading', { name: /Notifications/ })).toBeVisible()
   })
 
   test('déconnexion fonctionne', async ({ page }) => {

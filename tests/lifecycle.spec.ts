@@ -163,7 +163,7 @@ test.describe.serial('🚀 Lifecycle complet Digital Fidélité', () => {
 
   test('1.1 La page d\'accueil se charge avec toggle dark/light', async ({ page }) => {
     await page.goto('/')
-    await expect(page.locator('h1')).toContainText('Fidélisez')
+    await expect(page.getByRole('heading', { name: /Fidélisez/ })).toBeVisible()
     await expect(page.locator('button[aria-label*="thème"]')).toBeVisible()
     await expect(page.locator('a[href="/register"]').first()).toBeVisible()
     await expect(page.locator('a[href="/login"]').first()).toBeVisible()
@@ -205,7 +205,7 @@ test.describe.serial('🚀 Lifecycle complet Digital Fidélité', () => {
   test('2.1 Le commerçant accède au dashboard', async ({ page }) => {
     await login(page)
     await page.goto('/dashboard')
-    await expect(page.locator('h1')).toContainText(TEST_MERCHANT_NAME)
+    await expect(page.getByRole('heading', { name: new RegExp(TEST_MERCHANT_NAME) })).toBeVisible()
     await expect(page.locator('text=Cartes')).toBeVisible()
     await expect(page.locator('text=Clients')).toBeVisible()
   })
@@ -223,7 +223,7 @@ test.describe.serial('🚀 Lifecycle complet Digital Fidélité', () => {
     await page.waitForURL(/\/cards\/[^/?]+$/, { timeout: 15000 })
     stampCardId = page.url().split('/cards/')[1]
 
-    await expect(page.locator('h1')).toContainText('Carte Café Test')
+    await expect(page.getByRole('heading', { name: /Carte Café Test/ })).toBeVisible()
     expect(stampCardId).toBeTruthy()
   })
 
@@ -349,7 +349,7 @@ test.describe.serial('🚀 Lifecycle complet Digital Fidélité', () => {
   test('6.1 Création d\'une carte à points', async ({ page }) => {
     await login(page)
     pointsCardId = await createCardViaForm(page, 'Club Premium Test', 'points')
-    await expect(page.locator('h1')).toContainText('Club Premium Test')
+    await expect(page.getByRole('heading', { name: /Club Premium Test/ })).toBeVisible()
     await expect(page.locator('text=Points')).toBeVisible()
     expect(pointsCardId).toBeTruthy()
   })
@@ -436,7 +436,7 @@ test.describe.serial('🚀 Lifecycle complet Digital Fidélité', () => {
   test('8.1 La page notifications est accessible', async ({ page }) => {
     await login(page)
     await page.goto('/notifications')
-    await expect(page.locator('h1')).toContainText('Notifications')
+    await expect(page.getByRole('heading', { name: /Notifications/ })).toBeVisible()
     await expect(page.locator('text=Composer')).toBeVisible({ timeout: 5000 })
   })
 

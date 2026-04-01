@@ -13,7 +13,7 @@ export default defineConfig({
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    headless: false,   // Chrome s'ouvre visuellement en local
+    headless: process.env.CI === '1' ? true : false,
     video: 'off',
   },
   projects: [
