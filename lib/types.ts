@@ -18,6 +18,7 @@ export interface LoyaltyCard {
   points_for_reward: number // N points = 1€ de récompense (default 750)
   card_color: string
   card_text_color: string
+  logo_url: string | null
   reward_description: string
   is_active: boolean
   created_at: string
