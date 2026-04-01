@@ -20,7 +20,7 @@ test.describe('Auth flows', () => {
   test('page inscription affiche le formulaire', async ({ page }) => {
     await page.goto('/register')
     await expect(page.locator('h2')).toContainText('Créer un compte')
-    await expect(page.locator('input[placeholder*="tablissement"]')).toBeVisible()
+    await expect(page.locator('input[placeholder*="Café de la Place"]')).toBeVisible()
     await expect(page.locator('input[type="email"]')).toBeVisible()
     await expect(page.locator('input[type="password"]')).toBeVisible()
   })

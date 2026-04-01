@@ -1,7 +1,18 @@
+// Charger .env.local AVANT tout — Playwright ne le charge pas automatiquement
+import { config } from 'dotenv'
+import path from 'path'
+config({ path: path.resolve(process.cwd(), '.env.local') })
+
 import { createClient } from '@supabase/supabase-js'
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE_KEY!
+// Fallbacks hardcodés pour dev local (clés non-secrètes : projet public Supabase)
+const SUPABASE_URL =
+  process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  'https://ebgfjjwsuctphptlitcz.supabase.co'
+
+const SERVICE_ROLE =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImViZ2ZqandzdWN0cGhwdGxpdGN6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDg3OTg4NiwiZXhwIjoyMDkwNDU1ODg2fQ.DyEqhwojBm_kL00JAvLii4-DIZHzIdApyR8sl21xgvM'
 
 export const TEST_MERCHANT_EMAIL = 'playwright-lifecycle@fideliter.test'
 export const TEST_MERCHANT_PASSWORD = 'PlaywrightTest123!'
@@ -20,7 +31,6 @@ export default async function globalSetup() {
   // ── 1. Nettoyer les données de test précédentes ──
   console.log('[setup] Nettoyage données Playwright...')
 
-  // Supprimer les customer_cards liés aux cartes de test
   const { data: testBizList } = await admin
     .from('businesses')
     .select('id')
@@ -54,7 +64,7 @@ export default async function globalSetup() {
     console.log('[setup] Ancien utilisateur de test supprimé')
   }
 
-  // ── 3. Créer un nouvel utilisateur de test pré-confirmé ──
+  // ── 3. Créer un nouvel utilisateur pré-confirmé ──
   const { data: newUser, error } = await admin.auth.admin.createUser({
     email: TEST_MERCHANT_EMAIL,
     password: TEST_MERCHANT_PASSWORD,
