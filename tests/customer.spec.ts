@@ -1,14 +1,13 @@
 import { test, expect } from '@playwright/test'
 import { login, createCard } from './helpers'
 
-test.describe('Portail client', () => {
+test.describe.serial('Portail client', () => {
   let cardId: string
 
-  test.beforeAll(async ({ browser }) => {
-    const page = await browser.newPage()
+  test('création de la carte pour les tests client', async ({ page }) => {
     await login(page)
     cardId = await createCard(page, 'Carte Client Test', 'stamps')
-    await page.close()
+    expect(cardId).toBeTruthy()
   })
 
   test('page /card/[id] affiche le formulaire inscription', async ({ page }) => {
@@ -37,7 +36,9 @@ test.describe('Portail client', () => {
       await enrollBtn.click()
       await page.waitForURL(/\/card\/[^/?]+$/, { timeout: 12000 })
     }
-    await expect(page.locator('text=mon QR code')).toBeVisible({ timeout: 8000 })
+    await expect(
+      page.locator('text=Afficher mon QR code').or(page.locator('[data-testid="customer-qr"]'))
+    ).toBeVisible({ timeout: 8000 })
   })
 
   test('carte invalide retourne 404', async ({ page }) => {

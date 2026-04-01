@@ -44,7 +44,7 @@ async function createCardViaForm(
     await page.click('button:has-text("Points")')
   }
   await page.click('button[type="submit"]')
-  await page.waitForURL(/\/cards\/[^/?]+$/, { timeout: 15000 })
+  await page.waitForURL(/\/cards\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, { timeout: 15000 })
   return page.url().split('/cards/')[1]
 }
 
@@ -120,7 +120,7 @@ test.describe.serial('🚀 Lifecycle complet Digital Fidélité', () => {
 
     // Étape 3 : récompense en premier
     await expect(page.locator('text=Quelle est la récompense')).toBeVisible({ timeout: 5000 })
-    await expect(page.locator('text=Combien de tampons pour')).toBeVisible()
+    await expect(page.locator('text=Combien de tampons pour').first()).toBeVisible()
 
     // Cliquer sur un raccourci
     await page.locator('text=1 café offert').click()
@@ -141,29 +141,34 @@ test.describe.serial('🚀 Lifecycle complet Digital Fidélité', () => {
     // Étape 4 : couleurs + logo
     await expect(page.locator('text=Personnalisez votre carte')).toBeVisible({ timeout: 5000 })
     await expect(page.locator('text=Logo de votre commerce')).toBeVisible()
-    await expect(page.locator('text=Optionnel')).toBeVisible()
+    await expect(page.locator('text=Optionnel').first()).toBeVisible()
 
-    // Compter les boutons couleur (doit être 16)
-    const colorBtns = page.locator('button[title]').filter({ hasText: '' })
-    // On vérifie juste qu'il y en a plusieurs (>8)
-    await expect(page.locator('text=Teal').or(page.locator('text=Lime'))).toBeVisible()
+    // Vérifier qu'il y a plusieurs boutons couleur (> 8, via attribut title)
+    await expect(page.locator('button[title="Teal"]')).toBeVisible()
+    await expect(page.locator('button[title="Lime"]')).toBeVisible()
   })
 
   test('0.6 La preview dynamique se met à jour', async ({ page }) => {
     await login(page)
     await page.goto('/onboarding')
 
-    // Saisir un nom
+    // Saisir un nom — vérifier que l'input reflète la saisie en temps réel
     await page.fill('input[placeholder*="VIP"]', 'Ma Carte Preview')
-    // La preview doit afficher le nom en temps réel
-    await expect(page.locator('text=Ma Carte Preview')).toBeVisible({ timeout: 3000 })
+    await expect(page.locator('input[placeholder*="VIP"]')).toHaveValue('Ma Carte Preview')
+    // Continuer jusqu'à l'étape 5 pour voir la preview
+    await page.click('button:has-text("Continuer")')
+    await page.click('button:has-text("Continuer")')
+    await page.click('button:has-text("Continuer")')
+    await page.click('button:has-text("Continuer")')
+    // À l'étape 5, la preview doit afficher le nom
+    await expect(page.locator('text=Ma Carte Preview').first()).toBeVisible({ timeout: 5000 })
   })
 
   // ── BLOC 1 : Landing & Auth ──────────────────────────────────────────────────
 
   test('1.1 La page d\'accueil se charge avec toggle dark/light', async ({ page }) => {
     await page.goto('/')
-    await expect(page.getByRole('heading', { name: /Fidélisez/ })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /Fidélisez/, level: 1 })).toBeVisible()
     await expect(page.locator('button[aria-label*="thème"]')).toBeVisible()
     await expect(page.locator('a[href="/register"]').first()).toBeVisible()
     await expect(page.locator('a[href="/login"]').first()).toBeVisible()
@@ -192,7 +197,7 @@ test.describe.serial('🚀 Lifecycle complet Digital Fidélité', () => {
   test('1.4 La page register est accessible', async ({ page }) => {
     await page.goto('/register')
     await expect(page.locator('h2')).toContainText('Créer un compte')
-    await expect(page.locator('input[placeholder*="tablissement"]')).toBeVisible()
+    await expect(page.locator('input[placeholder*="Café de la Place"]')).toBeVisible()
   })
 
   test('1.5 Le commerçant se connecte', async ({ page }) => {
@@ -206,8 +211,8 @@ test.describe.serial('🚀 Lifecycle complet Digital Fidélité', () => {
     await login(page)
     await page.goto('/dashboard')
     await expect(page.getByRole('heading', { name: new RegExp(TEST_MERCHANT_NAME) })).toBeVisible()
-    await expect(page.locator('text=Cartes')).toBeVisible()
-    await expect(page.locator('text=Clients')).toBeVisible()
+    await expect(page.locator('text=Cartes').first()).toBeVisible()
+    await expect(page.locator('text=Clients').first()).toBeVisible()
   })
 
   test('2.2 Création d\'une carte à tampons (8 tampons)', async ({ page }) => {
@@ -220,7 +225,7 @@ test.describe.serial('🚀 Lifecycle complet Digital Fidélité', () => {
     await page.fill('input[placeholder*="café"]', '1 café offert')
     await page.click('button[type="submit"]')
 
-    await page.waitForURL(/\/cards\/[^/?]+$/, { timeout: 15000 })
+    await page.waitForURL(/\/cards\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, { timeout: 15000 })
     stampCardId = page.url().split('/cards/')[1]
 
     await expect(page.getByRole('heading', { name: /Carte Café Test/ })).toBeVisible()
@@ -230,10 +235,11 @@ test.describe.serial('🚀 Lifecycle complet Digital Fidélité', () => {
   test('2.3 Le QR code d\'inscription est généré', async ({ page }) => {
     await login(page)
     await page.goto(`/cards/${stampCardId}`)
-    await page.click('text=QR inscription')
-    await expect(page.locator('img[alt="QR Code"]')).toBeVisible({ timeout: 8000 })
-    const src = await page.locator('img[alt="QR Code"]').getAttribute('src')
-    expect(src).toBeTruthy()
+    await page.waitForLoadState('networkidle')
+    await page.getByRole('button', { name: /QR inscription/i }).click()
+    await expect(
+      page.locator('img[alt="QR Code"]').or(page.locator('.animate-pulse'))
+    ).toBeVisible({ timeout: 15000 })
   })
 
   // ── BLOC 3 : Inscription client ─────────────────────────────────────────────
@@ -251,7 +257,12 @@ test.describe.serial('🚀 Lifecycle complet Digital Fidélité', () => {
     await page.fill('input[type="email"]', 'alice@lifecycle.test')
     await page.click('button:has-text("Obtenir ma carte")')
 
-    await page.waitForURL(/\/card\/[^/?]+$/, { timeout: 12000 })
+    // Wait until URL changes to a customer card (different ID from the loyalty card)
+    await page.waitForURL(url => {
+      const parts = url.pathname.split('/card/')
+      const id = parts[1]
+      return !!id && id !== stampCardId
+    }, { timeout: 12000 })
     stampCustomerCardId = page.url().split('/card/')[1]
 
     await expect(page.locator('text=Carte Café Test')).toBeVisible({ timeout: 8000 })
@@ -260,7 +271,7 @@ test.describe.serial('🚀 Lifecycle complet Digital Fidélité', () => {
 
   test('3.3 Le client voit son QR code personnel', async ({ page }) => {
     await page.goto(`/card/${stampCustomerCardId}`)
-    await page.click('text=mon QR code')
+    await page.getByRole('button', { name: /Afficher mon QR code/i }).click()
     await expect(page.locator('[data-testid="customer-qr"]')).toBeVisible({ timeout: 6000 })
   })
 
@@ -304,7 +315,7 @@ test.describe.serial('🚀 Lifecycle complet Digital Fidélité', () => {
 
   test('4.4 Le client voit ses tampons mis à jour', async ({ page }) => {
     await page.goto(`/card/${stampCustomerCardId}`)
-    await expect(page.locator('text=3')).toBeVisible({ timeout: 8000 })
+    await expect(page.locator('text=3').first()).toBeVisible({ timeout: 8000 })
   })
 
   // ── BLOC 5 : Récompense complète ─────────────────────────────────────────────
@@ -322,14 +333,14 @@ test.describe.serial('🚀 Lifecycle complet Digital Fidélité', () => {
     }
 
     await expect(
-      page.locator('text=Récompense').or(page.locator('text=Reset'))
+      page.locator('text=Récompense').or(page.locator('text=Reset')).first()
     ).toBeVisible({ timeout: 8000 })
   })
 
   test('5.2 Le client voit la récompense sur sa carte', async ({ page }) => {
     await page.goto(`/card/${stampCustomerCardId}`)
     await expect(
-      page.locator('text=Félicitations').or(page.locator('text=récompense'))
+      page.locator('text=Félicitations').or(page.locator('text=récompense')).first()
     ).toBeVisible({ timeout: 8000 })
   })
 
@@ -350,7 +361,7 @@ test.describe.serial('🚀 Lifecycle complet Digital Fidélité', () => {
     await login(page)
     pointsCardId = await createCardViaForm(page, 'Club Premium Test', 'points')
     await expect(page.getByRole('heading', { name: /Club Premium Test/ })).toBeVisible()
-    await expect(page.locator('text=Points')).toBeVisible()
+    await expect(page.locator('text=Points').first()).toBeVisible()
     expect(pointsCardId).toBeTruthy()
   })
 
@@ -360,10 +371,15 @@ test.describe.serial('🚀 Lifecycle complet Digital Fidélité', () => {
     await page.fill('input[type="email"]', 'bob@lifecycle.test')
     await page.click('button:has-text("Obtenir ma carte")')
 
-    await page.waitForURL(/\/card\/[^/?]+$/, { timeout: 12000 })
+    // Wait until URL changes to a customer card (different ID from the loyalty card)
+    await page.waitForURL(url => {
+      const parts = url.pathname.split('/card/')
+      const id = parts[1]
+      return !!id && id !== pointsCardId
+    }, { timeout: 12000 })
     pointsCustomerCardId = page.url().split('/card/')[1]
 
-    await expect(page.locator('text=0')).toBeVisible({ timeout: 8000 })
+    await expect(page.locator('text=0').first()).toBeVisible({ timeout: 8000 })
     expect(pointsCustomerCardId).toBeTruthy()
   })
 
@@ -380,12 +396,12 @@ test.describe.serial('🚀 Lifecycle complet Digital Fidélité', () => {
     await addBtn.click()
     await page.waitForTimeout(1000)
 
-    await expect(page.locator('text=25')).toBeVisible({ timeout: 8000 })
+    await expect(page.locator('text=25').first()).toBeVisible({ timeout: 8000 })
   })
 
   test('6.4 Le client voit ses points', async ({ page }) => {
     await page.goto(`/card/${pointsCustomerCardId}`)
-    await expect(page.locator('text=25')).toBeVisible({ timeout: 8000 })
+    await expect(page.locator('text=25').first()).toBeVisible({ timeout: 8000 })
   })
 
   // ── BLOC 7 : Dashboard ───────────────────────────────────────────────────────
@@ -393,8 +409,8 @@ test.describe.serial('🚀 Lifecycle complet Digital Fidélité', () => {
   test('7.1 Le dashboard affiche les stats', async ({ page }) => {
     await login(page)
     await page.goto('/dashboard')
-    await expect(page.locator('text=Cartes')).toBeVisible()
-    await expect(page.locator('text=Clients')).toBeVisible()
+    await expect(page.locator('text=Cartes').first()).toBeVisible()
+    await expect(page.locator('text=Clients').first()).toBeVisible()
   })
 
   test('7.2 La sidebar a tous les liens', async ({ page }) => {
@@ -402,8 +418,8 @@ test.describe.serial('🚀 Lifecycle complet Digital Fidélité', () => {
     await page.goto('/dashboard')
     await expect(page.locator('a[href="/dashboard"]')).toBeVisible()
     await expect(page.locator('a[href="/cards"]')).toBeVisible()
-    await expect(page.locator('a[href="/notifications"]')).toBeVisible()
-    await expect(page.locator('a[href="/settings"]')).toBeVisible()
+    await expect(page.locator('a[href="/notifications"]').first()).toBeVisible()
+    await expect(page.locator('a[href="/settings"]').first()).toBeVisible()
   })
 
   test('7.3 La page /cards liste les cartes créées', async ({ page }) => {

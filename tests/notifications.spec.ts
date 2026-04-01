@@ -49,6 +49,6 @@ test.describe('Notifications push', () => {
 
   test('lien notification dans sidebar dashboard', async ({ page }) => {
     await page.goto('/dashboard')
-    await expect(page.locator('a[href="/notifications"]')).toBeVisible()
+    await expect(page.locator('a[href="/notifications"]').first()).toBeVisible()
   })
 })

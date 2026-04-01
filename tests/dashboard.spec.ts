@@ -8,29 +8,29 @@ test.describe('Dashboard', () => {
 
   test('dashboard affiche les stats', async ({ page }) => {
     await page.goto('/dashboard')
-    await expect(page.locator('text=Cartes').or(page.locator('text=cartes'))).toBeVisible({ timeout: 8000 })
-    await expect(page.locator('text=Clients').or(page.locator('text=clients'))).toBeVisible()
-    await expect(page.locator('text=Notification').or(page.locator('text=notification'))).toBeVisible()
+    await expect(page.locator('text=Cartes').or(page.locator('text=cartes')).first()).toBeVisible({ timeout: 8000 })
+    await expect(page.locator('text=Clients').or(page.locator('text=clients')).first()).toBeVisible()
+    await expect(page.locator('text=Notification').or(page.locator('text=notification')).first()).toBeVisible()
   })
 
   test('sidebar contient les liens de navigation', async ({ page }) => {
     await page.goto('/dashboard')
-    await expect(page.locator('a[href="/dashboard"]')).toBeVisible()
-    await expect(page.locator('a[href="/cards"]')).toBeVisible()
-    await expect(page.locator('a[href="/notifications"]')).toBeVisible()
+    await expect(page.locator('a[href="/dashboard"]').first()).toBeVisible()
+    await expect(page.locator('a[href="/cards"]').first()).toBeVisible()
+    await expect(page.locator('a[href="/notifications"]').first()).toBeVisible()
   })
 
   test('bouton créer une carte visible', async ({ page }) => {
     await page.goto('/dashboard')
     await expect(
-      page.locator('a[href="/cards/new"]').or(page.locator('text=Créer une carte'))
+      page.locator('a[href="/cards/new"]').or(page.locator('text=Créer une carte')).first()
     ).toBeVisible()
   })
 
   test('bouton envoyer offre visible', async ({ page }) => {
     await page.goto('/dashboard')
     await expect(
-      page.locator('text=Envoyer une offre').or(page.locator('a[href="/notifications"]'))
+      page.locator('text=Envoyer une offre').or(page.locator('a[href="/notifications"]')).first()
     ).toBeVisible()
   })
 

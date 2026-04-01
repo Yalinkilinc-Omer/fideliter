@@ -1,13 +1,11 @@
 import { test, expect } from '@playwright/test'
 import { login, createCard } from './helpers'
 
-test.describe('Système de points', () => {
+test.describe.serial('Système de points', () => {
   let pointsCardId: string
 
-  test.beforeAll(async ({ browser }) => {
-    const page = await browser.newPage()
+  test('création carte points + inscription client initial', async ({ page }) => {
     await login(page)
-    // Créer carte points
     pointsCardId = await createCard(page, 'Carte Points Playwright', 'points')
     // Inscrire un client via le portail
     await page.goto(`/card/${pointsCardId}`)
@@ -15,7 +13,7 @@ test.describe('Système de points', () => {
     await page.fill('input[type="email"]', 'points@example.com')
     await page.click('button:has-text("Obtenir ma carte")')
     await page.waitForURL(/\/card\/[^/?]+$/, { timeout: 12000 })
-    await page.close()
+    expect(pointsCardId).toBeTruthy()
   })
 
   test('page carte points affiche saisie euros', async ({ page }) => {
@@ -35,7 +33,7 @@ test.describe('Système de points', () => {
     await addBtn.click()
     await page.waitForTimeout(1500)
     await expect(
-      page.locator('text=10 pts').or(page.locator('text=10 points'))
+      page.locator('text=10 pts').or(page.locator('text=10 points')).first()
     ).toBeVisible({ timeout: 8000 })
   })
 
@@ -43,9 +41,9 @@ test.describe('Système de points', () => {
     await login(page)
     await page.goto('/cards/new')
     await page.click('button:has-text("Points")')
-    await expect(page.locator('text=750')).toBeVisible()
+    await expect(page.locator('text=750 pts').first()).toBeVisible()
     await expect(
-      page.locator('text=1€ = 1 point').or(page.locator('text=1€ dépensé'))
+      page.locator('text=1€ = 1 point').or(page.locator('text=1€ dépensé')).first()
     ).toBeVisible()
   })
 
@@ -59,7 +57,7 @@ test.describe('Système de points', () => {
       await page.waitForURL(/\/card\/[^/?]+$/, { timeout: 12000 })
     }
     await expect(
-      page.locator('text=pts').or(page.locator('text=points'))
+      page.locator('text=pts').or(page.locator('text=points')).first()
     ).toBeVisible({ timeout: 8000 })
   })
 })

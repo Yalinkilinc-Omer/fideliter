@@ -36,6 +36,7 @@ export async function createCard(
   await page.fill('input[placeholder*="Carte"]', name)
   if (type === 'points') await page.click('button:has-text("Points")')
   await page.click('button[type="submit"]')
-  await page.waitForURL(/\/cards\/[^/?]+$/, { timeout: 15000 })
+  // Attendre une URL de type /cards/{uuid} — exclure /cards/new qui est la page de départ
+  await page.waitForURL(/\/cards\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, { timeout: 15000 })
   return page.url().split('/cards/')[1]
 }
