@@ -1,30 +1,9 @@
 import { test, expect } from '@playwright/test'
-
-const TEST_EMAIL = 'test-playwright@fideliter.dev'
-const TEST_PASSWORD = 'playwright123'
-const BUSINESS_NAME = 'Café Playwright Test'
-
-async function loginOrRegister(page: import('@playwright/test').Page) {
-  await page.goto('/login')
-  await page.fill('input[type="email"]', TEST_EMAIL)
-  await page.fill('input[type="password"]', TEST_PASSWORD)
-  await page.click('button[type="submit"]')
-  await page.waitForTimeout(2000)
-  if (page.url().includes('/login')) {
-    await page.goto('/register')
-    await page.fill('input[placeholder*="tablissement"]', BUSINESS_NAME)
-    await page.fill('input[type="email"]', TEST_EMAIL)
-    await page.fill('input[type="password"]', TEST_PASSWORD)
-    await page.click('button[type="submit"]')
-    await page.waitForURL(/\/dashboard/, { timeout: 10000 })
-  } else {
-    await page.waitForURL(/\/dashboard/, { timeout: 10000 })
-  }
-}
+import { login } from './helpers'
 
 test.describe('Notifications push', () => {
   test.beforeEach(async ({ page }) => {
-    await loginOrRegister(page)
+    await login(page)
   })
 
   test('page /notifications accessible', async ({ page }) => {
@@ -70,7 +49,6 @@ test.describe('Notifications push', () => {
 
   test('lien notification dans sidebar dashboard', async ({ page }) => {
     await page.goto('/dashboard')
-    const notifLink = page.locator('a[href="/notifications"]')
-    await expect(notifLink).toBeVisible()
+    await expect(page.locator('a[href="/notifications"]')).toBeVisible()
   })
 })

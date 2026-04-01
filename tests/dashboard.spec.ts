@@ -1,30 +1,9 @@
 import { test, expect } from '@playwright/test'
-
-const TEST_EMAIL = 'test-playwright@fideliter.dev'
-const TEST_PASSWORD = 'playwright123'
-const BUSINESS_NAME = 'Café Playwright Test'
-
-async function loginOrRegister(page: import('@playwright/test').Page) {
-  await page.goto('/login')
-  await page.fill('input[type="email"]', TEST_EMAIL)
-  await page.fill('input[type="password"]', TEST_PASSWORD)
-  await page.click('button[type="submit"]')
-  await page.waitForTimeout(2000)
-  if (page.url().includes('/login')) {
-    await page.goto('/register')
-    await page.fill('input[placeholder*="tablissement"]', BUSINESS_NAME)
-    await page.fill('input[type="email"]', TEST_EMAIL)
-    await page.fill('input[type="password"]', TEST_PASSWORD)
-    await page.click('button[type="submit"]')
-    await page.waitForURL(/\/dashboard/, { timeout: 10000 })
-  } else {
-    await page.waitForURL(/\/dashboard/, { timeout: 10000 })
-  }
-}
+import { login } from './helpers'
 
 test.describe('Dashboard', () => {
   test.beforeEach(async ({ page }) => {
-    await loginOrRegister(page)
+    await login(page)
   })
 
   test('dashboard affiche les stats', async ({ page }) => {
@@ -43,12 +22,16 @@ test.describe('Dashboard', () => {
 
   test('bouton créer une carte visible', async ({ page }) => {
     await page.goto('/dashboard')
-    await expect(page.locator('a[href="/cards/new"]').or(page.locator('text=Créer une carte'))).toBeVisible()
+    await expect(
+      page.locator('a[href="/cards/new"]').or(page.locator('text=Créer une carte'))
+    ).toBeVisible()
   })
 
   test('bouton envoyer offre visible', async ({ page }) => {
     await page.goto('/dashboard')
-    await expect(page.locator('text=Envoyer une offre').or(page.locator('a[href="/notifications"]'))).toBeVisible()
+    await expect(
+      page.locator('text=Envoyer une offre').or(page.locator('a[href="/notifications"]'))
+    ).toBeVisible()
   })
 
   test('nav Mes cartes fonctionne', async ({ page }) => {
