@@ -43,7 +43,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4"
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4"
       style={{ background: 'linear-gradient(135deg, #EEF4FB 0%, #BDDDFC 50%, #88BDF2 100%)' }}
     >
       <div className="absolute top-0 left-0 w-72 h-72 rounded-full opacity-20 pointer-events-none"
@@ -54,9 +54,8 @@ export default function RegisterPage() {
       <div className="relative w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-7">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl shadow-xl mb-4"
-            style={{ background: 'linear-gradient(135deg, #384959, #6A89A7)' }}>
-            <span className="text-2xl">💎</span>
+          <div className="inline-flex items-center justify-center mb-4">
+            <img src="/kurt-logo.svg" alt="Kurt Digital" width={56} height={56} style={{ borderRadius: 14, boxShadow: '0 8px 24px rgba(56,73,89,0.35)' }} />
           </div>
           <h1 className="text-2xl font-black" style={{ color: '#384959' }}>Digital Fidélité</h1>
           <p className="text-sm mt-1" style={{ color: '#6A89A7' }}>Créez votre espace business</p>
