@@ -1,706 +1,501 @@
 'use client'
-
-import { useEffect, useState, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { useTheme } from '@/components/ThemeProvider'
-import { createClient } from '@/lib/supabase/client'
 
-// ── Palette Céladon & Gris-Bleu ───────────────────────────────────────────────
-// #F4F5F3  fond principal        (blanc cassé froid)
-// #DDE3DF  céladon pâle          (sections alternées, cartes)
-// #8FA8A0  céladon               (accent principal)
-// #D4C5B0  beige sable           (accent chaud, contrastes)
-// #263035  nuit                  (texte, fonds sombres)
-// #B8C9BF  céladon clair         (bordures, séparateurs)
-// Dark : fond #263035, texte #F4F5F3, accent #8FA8A0, chaud #D4C5B0
+/* ─── Palette Ardoise & Ivoire ─── */
+const P = {
+  bg:      '#F8F6F1',   // ivoire chaud
+  bg2:     '#EFEDE7',   // ivoire secondaire
+  card:    '#FFFFFF',
+  text:    '#2C3E50',   // ardoise
+  muted:   '#7F8C8D',   // gris bleuté
+  accent:  '#C9A96E',   // or sable
+  border:  '#E2DDD5',   // sable clair
+  dark:    '#1A2530',   // nuit
+  dark2:   '#243040',
+}
 
-// ── Carousel thèmes ───────────────────────────────────────────────────────────
-const CARD_SLIDES = [
+/* ─── Thèmes cartes ─── */
+const THEMES = [
   {
-    id: 'classique',
     label: 'Classique',
-    emoji: '☕',
-    subtitle: 'Élégant & intemporel',
-    bg: 'linear-gradient(135deg, #263035, #3a4a50)',
-    accent: '#8FA8A0',
-    preview: { name: 'Café du Marché', stamps: 7, total: 10, reward: '1 café offert' },
+    sub:   'Élégant & intemporel',
+    from:  '#2C3E50',
+    to:    '#34495e',
+    dot:   '#C9A96E',
+    emoji: '♠',
   },
   {
-    id: 'luxe',
     label: 'Luxe',
-    emoji: '💎',
-    subtitle: 'Premium & raffiné',
-    bg: 'linear-gradient(135deg, #1A1A1A, #2e2a22)',
-    accent: '#D4AF37',
-    preview: { name: 'Club Prestige', stamps: 5, total: 8, reward: 'Soin offert' },
+    sub:   'Or & prestige',
+    from:  '#1A1A2E',
+    to:    '#16213E',
+    dot:   '#D4AF37',
+    emoji: '◆',
   },
   {
-    id: 'manga',
-    label: 'Manga',
+    label: 'Naruto 🍥',
+    sub:   'Orange & spirale',
+    from:  '#D35400',
+    to:    '#E67E22',
+    dot:   '#F8F0E3',
+    emoji: '🍥',
+  },
+  {
+    label: 'Demon Slayer',
+    sub:   'Tanjiro & eau',
+    from:  '#1a3a5c',
+    to:    '#2471a3',
+    dot:   '#7FB3D3',
+    emoji: '💧',
+  },
+  {
+    label: 'Dragon Ball Z',
+    sub:   'Goku & énergie',
+    from:  '#1565C0',
+    to:    '#0D47A1',
+    dot:   '#FFD600',
     emoji: '⚡',
-    subtitle: 'Naruto · Demon Slayer · DBZ',
-    bg: 'linear-gradient(135deg, #1e1b4b, #4c1d95)',
-    accent: '#a78bfa',
-    preview: { name: 'Sasuke Edition', stamps: 6, total: 9, reward: 'Item exclusif' },
-  },
-  {
-    id: 'custom',
-    label: 'Personnalisé',
-    emoji: '🎨',
-    subtitle: 'Vos couleurs, votre marque',
-    bg: 'linear-gradient(135deg, #8FA8A0, #263035)',
-    accent: '#F4F5F3',
-    preview: { name: 'Votre boutique', stamps: 3, total: 10, reward: 'À définir' },
   },
 ]
 
-export default function LandingPage() {
-  const { theme, toggle } = useTheme()
-  const [mounted, setMounted]   = useState(false)
-  const [loggedIn, setLoggedIn] = useState(false)
+/* ─── Card mockup ─── */
+function CardMockup({ theme }: { theme: typeof THEMES[0] }) {
+  return (
+    <div
+      style={{
+        background: `linear-gradient(135deg, ${theme.from}, ${theme.to})`,
+        borderRadius: 16,
+        padding: '28px 24px',
+        color: '#fff',
+        minWidth: 260,
+        maxWidth: 320,
+        boxShadow: '0 20px 60px rgba(0,0,0,0.18)',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      {/* decorative circle */}
+      <div style={{
+        position: 'absolute', right: -20, top: -20,
+        width: 120, height: 120, borderRadius: '50%',
+        background: 'rgba(255,255,255,0.06)',
+      }} />
+      <div style={{
+        position: 'absolute', right: 20, bottom: -30,
+        width: 80, height: 80, borderRadius: '50%',
+        background: 'rgba(255,255,255,0.04)',
+      }} />
+
+      <div style={{ fontSize: 10, opacity: 0.6, letterSpacing: 2, marginBottom: 20 }}>
+        CARTE FIDÉLITÉ
+      </div>
+      <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>
+        Café Lumière
+      </div>
+      <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 24 }}>
+        Marie Dupont
+      </div>
+
+      {/* stamps */}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
+        {Array.from({ length: 10 }).map((_, i) => (
+          <div key={i} style={{
+            width: 28, height: 28, borderRadius: '50%',
+            border: `2px solid rgba(255,255,255,${i < 7 ? 0.9 : 0.25})`,
+            background: i < 7 ? theme.dot : 'transparent',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 10,
+          }}>
+            {i < 7 ? '✓' : ''}
+          </div>
+        ))}
+      </div>
+
+      <div style={{ fontSize: 11, opacity: 0.6 }}>7 / 10 tampons</div>
+    </div>
+  )
+}
+
+export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false)
-  const [slide, setSlide]       = useState(0)
+  const [active, setActive] = useState(0)
   const [animating, setAnimating] = useState(false)
 
-  useEffect(() => {
-    setMounted(true)
-    const supabase = createClient()
-    supabase.auth.getUser().then(({ data: { user } }) => setLoggedIn(!!user))
-  }, [])
-
-  const goTo = useCallback((idx: number) => {
-    if (animating) return
+  const goTo = useCallback((i: number) => {
+    if (animating || i === active) return
     setAnimating(true)
-    setTimeout(() => { setSlide(idx); setAnimating(false) }, 250)
-  }, [animating])
+    setActive(i)
+    setTimeout(() => setAnimating(false), 400)
+  }, [active, animating])
 
   useEffect(() => {
-    const t = setInterval(() => goTo((slide + 1) % CARD_SLIDES.length), 4000)
+    const t = setInterval(() => goTo((active + 1) % THEMES.length), 4000)
     return () => clearInterval(t)
-  }, [slide, goTo])
-
-  const features = [
-    { icon: '📱', title: 'QR Code instantané',   desc: 'Inscription client en 10 secondes. Aucune application à télécharger.' },
-    { icon: '🎖️', title: 'Tampons & Points',      desc: 'Tampons par achat ou points cumulables convertibles en récompenses.' },
-    { icon: '🔔', title: 'Notifications push',    desc: 'Envoyez vos offres exclusives directement sur le smartphone de vos clients.' },
-    { icon: '📊', title: 'Dashboard complet',     desc: 'Pilotez vos clients, votre historique et vos campagnes en un coup d\'œil.' },
-  ]
-
-  const steps = [
-    { n: '01', label: 'Créez votre compte',     desc: 'En 2 minutes, sans carte bancaire.' },
-    { n: '02', label: 'Configurez votre carte',  desc: 'Thème, récompense, nombre de tampons.' },
-    { n: '03', label: 'Partagez le QR code',    desc: 'Imprimez-le ou affichez-le en caisse.' },
-    { n: '04', label: 'Fidélisez vos clients',  desc: 'Ils cumulent, vous gérez.' },
-  ]
-
-  const current = CARD_SLIDES[slide]
+  }, [active, goTo])
 
   return (
-    <div className="min-h-screen transition-colors duration-300"
-      style={{ background: 'var(--bg)', color: 'var(--text)' }}
-    >
-      <style>{`
-        :root {
-          --bg:      #F4F5F3;
-          --bg2:     #DDE3DF;
-          --accent:  #8FA8A0;
-          --warm:    #D4C5B0;
-          --night:   #263035;
-          --clair:   #B8C9BF;
-          --text:    #263035;
-          --muted:   #6a8880;
-          --card:    #fff;
-          --border:  #B8C9BF;
-        }
-        .dark {
-          --bg:      #263035;
-          --bg2:     #1e2b30;
-          --accent:  #8FA8A0;
-          --warm:    #D4C5B0;
-          --night:   #F4F5F3;
-          --clair:   #3a4d52;
-          --text:    #F4F5F3;
-          --muted:   #8FA8A0;
-          --card:    #1e2b30;
-          --border:  #3a4d52;
-        }
-      `}</style>
+    <div style={{ background: P.bg, color: P.text, fontFamily: "'Segoe UI', system-ui, sans-serif", minHeight: '100vh' }}>
 
-      {/* ═══════════ NAVBAR ═══════════ */}
-      <header className="sticky top-0 z-50 backdrop-blur-md border-b"
-        style={{ background: 'color-mix(in srgb, var(--bg) 94%, transparent)', borderColor: 'var(--border)' }}
-      >
-        <div className="max-w-6xl mx-auto px-5 py-3.5 flex items-center justify-between">
-
-          <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-sm"
-              style={{ background: 'linear-gradient(135deg, #263035, #8FA8A0)' }}>
-              <span className="text-base">💎</span>
+      {/* ── NAVBAR ── */}
+      <nav style={{
+        position: 'sticky', top: 0, zIndex: 50,
+        background: 'rgba(248,246,241,0.95)',
+        backdropFilter: 'blur(12px)',
+        borderBottom: `1px solid ${P.border}`,
+      }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          {/* Logo */}
+          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{
+              width: 34, height: 34, borderRadius: 10,
+              background: P.dark, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <span style={{ color: P.accent, fontSize: 16, fontWeight: 800 }}>F</span>
             </div>
-            <span className="font-black text-sm tracking-tight" style={{ color: 'var(--text)' }}>
-              Digital Fidélité
-            </span>
+            <span style={{ fontWeight: 700, fontSize: 18, color: P.text }}>Fidéliter</span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-7 text-sm font-medium" style={{ color: 'var(--muted)' }}>
-            {[
-              { href: '#fonctionnalites', label: 'Fonctionnalités' },
-              { href: '#comment',         label: 'Comment ça marche' },
-              { href: '#themes',          label: 'Thèmes' },
-              { href: '#contact',         label: 'Contact' },
-            ].map(l => (
-              <a key={l.href} href={l.href}
-                className="hover:opacity-100 transition-opacity"
-                style={{ color: 'var(--muted)' }}
-                onMouseEnter={e => (e.currentTarget.style.color = 'var(--text)')}
-                onMouseLeave={e => (e.currentTarget.style.color = 'var(--muted)')}
-              >
-                {l.label}
-              </a>
+          {/* Desktop links */}
+          <div className="hidden md:flex" style={{ gap: 32, alignItems: 'center' }}>
+            {[['#features', 'Fonctionnalités'], ['#how', 'Comment ça marche'], ['#contact', 'Contact']].map(([href, label]) => (
+              <a key={href} href={href} style={{ fontSize: 14, color: P.muted, textDecoration: 'none', fontWeight: 500 }}
+                onMouseEnter={e => (e.currentTarget.style.color = P.text)}
+                onMouseLeave={e => (e.currentTarget.style.color = P.muted)}
+              >{label}</a>
             ))}
-          </nav>
-
-          <div className="flex items-center gap-2">
-            {mounted && (
-              <button onClick={toggle} aria-label="Basculer le thème"
-                className="w-9 h-9 rounded-xl border flex items-center justify-center text-sm transition-colors"
-                style={{ borderColor: 'var(--border)' }}
-              >
-                {theme === 'dark' ? '☀️' : '🌙'}
-              </button>
-            )}
-
-            {loggedIn ? (
-              <Link href="/dashboard"
-                className="hidden sm:inline-flex px-4 py-2 rounded-xl text-sm font-bold text-white transition hover:opacity-90 shadow-sm"
-                style={{ background: '#263035' }}
-              >
-                Mon espace →
-              </Link>
-            ) : (
-              <>
-                <Link href="/login"
-                  className="hidden sm:block text-sm font-medium px-3 py-2 transition"
-                  style={{ color: 'var(--muted)' }}
-                >
-                  Connexion
-                </Link>
-                <Link href="/register"
-                  className="px-4 py-2 rounded-xl text-sm font-bold text-white transition hover:opacity-90 shadow-sm"
-                  style={{ background: '#263035' }}
-                >
-                  Démarrer
-                </Link>
-              </>
-            )}
-
-            {/* Hamburger */}
-            <button onClick={() => setMenuOpen(!menuOpen)} aria-label="Menu"
-              className="md:hidden w-9 h-9 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition"
-              style={{ borderColor: 'var(--border)' }}
-            >
-              {[0,1,2].map((i) => (
-                <span key={i}
-                  className="block h-0.5 rounded transition-all duration-200"
-                  style={{
-                    width: '16px',
-                    background: 'var(--accent)',
-                    transform: menuOpen
-                      ? i === 0 ? 'rotate(45deg) translateY(5px)'
-                      : i === 2 ? 'rotate(-45deg) translateY(-5px)'
-                      : 'scaleX(0)'
-                      : 'none',
-                    opacity: menuOpen && i === 1 ? 0 : 1,
-                  }}
-                />
-              ))}
-            </button>
           </div>
+
+          {/* CTA */}
+          <div className="hidden md:flex" style={{ gap: 12, alignItems: 'center' }}>
+            <Link href="/login" style={{
+              fontSize: 14, fontWeight: 500, color: P.muted, textDecoration: 'none', padding: '8px 16px',
+            }}>Connexion</Link>
+            <Link href="/register" style={{
+              fontSize: 14, fontWeight: 600, color: '#fff', textDecoration: 'none',
+              background: P.dark, padding: '9px 20px', borderRadius: 8,
+            }}>Commencer</Link>
+          </div>
+
+          {/* Burger */}
+          <button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, display: 'flex', flexDirection: 'column', gap: 5 }}>
+            {[0, 1, 2].map(i => (
+              <span key={i} style={{
+                display: 'block', width: 22, height: 2, borderRadius: 2, background: P.text,
+                transition: 'all 0.25s',
+                transform: menuOpen
+                  ? i === 0 ? 'translateY(7px) rotate(45deg)' : i === 2 ? 'translateY(-7px) rotate(-45deg)' : 'scaleX(0)'
+                  : 'none',
+                opacity: menuOpen && i === 1 ? 0 : 1,
+              }} />
+            ))}
+          </button>
         </div>
 
         {/* Mobile menu */}
         {menuOpen && (
-          <div className="md:hidden border-t px-5 py-4 flex flex-col gap-1"
-            style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}
-          >
-            {[
-              { href: '#fonctionnalites', label: 'Fonctionnalités' },
-              { href: '#comment',         label: 'Comment ça marche' },
-              { href: '#themes',          label: 'Thèmes' },
-              { href: '#contact',         label: 'Contact' },
-            ].map(l => (
-              <a key={l.href} href={l.href} onClick={() => setMenuOpen(false)}
-                className="text-sm font-medium py-2.5 border-b last:border-0 transition"
-                style={{ color: 'var(--muted)', borderColor: 'var(--border)' }}
-              >
-                {l.label}
+          <div style={{ background: P.bg, borderTop: `1px solid ${P.border}`, padding: '16px 24px 20px' }}>
+            {[['#features', 'Fonctionnalités'], ['#how', 'Comment ça marche'], ['#contact', 'Contact']].map(([href, label]) => (
+              <a key={href} href={href} onClick={() => setMenuOpen(false)}
+                style={{ display: 'block', padding: '12px 0', fontSize: 15, color: P.text, textDecoration: 'none', borderBottom: `1px solid ${P.border}` }}>
+                {label}
               </a>
             ))}
-            {!loggedIn && (
-              <Link href="/login" onClick={() => setMenuOpen(false)}
-                className="text-sm font-medium py-2.5 transition"
-                style={{ color: 'var(--muted)' }}
-              >
-                Connexion
-              </Link>
-            )}
+            <div style={{ marginTop: 16, display: 'flex', gap: 10 }}>
+              <Link href="/login" style={{ flex: 1, textAlign: 'center', padding: '11px 0', fontSize: 14, fontWeight: 500, color: P.text, border: `1px solid ${P.border}`, borderRadius: 8, textDecoration: 'none' }}>Connexion</Link>
+              <Link href="/register" style={{ flex: 1, textAlign: 'center', padding: '11px 0', fontSize: 14, fontWeight: 600, color: '#fff', background: P.dark, borderRadius: 8, textDecoration: 'none' }}>Commencer</Link>
+            </div>
           </div>
         )}
-      </header>
+      </nav>
 
-      {/* ═══════════ HERO ═══════════ */}
-      <section className="max-w-6xl mx-auto px-5 pt-16 pb-20 md:pt-24 md:pb-28 relative overflow-hidden">
-        {/* Soft glow blobs */}
-        <div className="absolute top-0 right-0 w-72 h-72 md:w-[450px] md:h-[450px] rounded-full opacity-25 pointer-events-none"
-          style={{ background: '#8FA8A0', filter: 'blur(90px)', transform: 'translate(20%, -20%)' }} />
-        <div className="absolute bottom-0 left-0 w-56 h-56 rounded-full opacity-20 pointer-events-none"
-          style={{ background: '#D4C5B0', filter: 'blur(70px)', transform: 'translate(-20%, 20%)' }} />
-
-        <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center relative z-10">
-          {/* Text */}
+      {/* ── HERO ── */}
+      <section style={{ maxWidth: 1100, margin: '0 auto', padding: '80px 24px 60px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 60, alignItems: 'center' }}>
+          {/* Left */}
           <div>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest mb-7 border"
-              style={{ borderColor: 'var(--clair)', color: 'var(--accent)' }}
-            >
-              ✦ Fidélité digitale
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              background: P.bg2, border: `1px solid ${P.border}`,
+              borderRadius: 20, padding: '6px 14px', marginBottom: 28,
+              fontSize: 13, color: P.muted,
+            }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#4CAF50', display: 'inline-block' }} />
+              Programme fidélité 100 % digital
             </div>
 
-            <h1 className="text-4xl md:text-6xl font-black leading-[1.05] mb-5 tracking-tight"
-              style={{ color: 'var(--text)' }}
-            >
-              Fidélisez vos clients
-              <br />
-              <span style={{ color: '#8FA8A0' }}>sans cartes papier</span>
+            <h1 style={{ fontSize: 'clamp(36px, 5vw, 56px)', fontWeight: 800, lineHeight: 1.15, color: P.text, margin: '0 0 20px' }}>
+              Fidélisez vos clients,<br />
+              <span style={{ color: P.accent }}>simplement.</span>
             </h1>
 
-            <p className="text-base mb-8 leading-relaxed max-w-md" style={{ color: 'var(--muted)' }}>
-              Créez une carte de fidélité digitale en 2 minutes. Vos clients scannent un QR code,
-              cumulent des tampons ou points, et reçoivent leurs récompenses instantanément.
+            <p style={{ fontSize: 17, lineHeight: 1.7, color: P.muted, margin: '0 0 36px', maxWidth: 480 }}>
+              Créez des cartes de fidélité digitales en 2 minutes. Vos clients les gardent sur leur téléphone — zéro papier, zéro friction.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              {loggedIn ? (
-                <Link href="/dashboard"
-                  className="inline-flex items-center justify-center px-7 py-3.5 rounded-2xl font-black text-base text-white transition hover:opacity-90 shadow-lg"
-                  style={{ background: '#263035', boxShadow: '0 8px 24px #26303530' }}
-                >
-                  Accéder à mon espace →
-                </Link>
-              ) : (
-                <>
-                  <Link href="/register"
-                    className="inline-flex items-center justify-center px-7 py-3.5 rounded-2xl font-black text-base text-white transition hover:opacity-90 shadow-lg"
-                    style={{ background: '#263035', boxShadow: '0 8px 24px #26303530' }}
-                  >
-                    Créer mon compte gratuit →
-                  </Link>
-                  <Link href="/login"
-                    className="inline-flex items-center justify-center border-2 px-7 py-3.5 rounded-2xl font-semibold text-base transition hover:border-[#8FA8A0]"
-                    style={{ borderColor: 'var(--clair)', color: 'var(--muted)' }}
-                  >
-                    J&apos;ai déjà un compte
-                  </Link>
-                </>
-              )}
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <Link href="/register" style={{
+                display: 'inline-block', padding: '14px 28px', borderRadius: 10,
+                background: P.dark, color: '#fff', fontWeight: 600, fontSize: 15,
+                textDecoration: 'none',
+              }}>
+                Créer mon programme →
+              </Link>
+              <a href="#how" style={{
+                display: 'inline-block', padding: '14px 28px', borderRadius: 10,
+                border: `1px solid ${P.border}`, color: P.text, fontWeight: 500, fontSize: 15,
+                textDecoration: 'none',
+              }}>
+                Voir comment ça marche
+              </a>
             </div>
 
-            {/* Social proof */}
-            <div className="mt-8 flex items-center gap-3 pt-7 border-t"
-              style={{ borderColor: 'var(--border)' }}
-            >
-              <div className="flex -space-x-2">
-                {['🧑‍🍳', '👨‍💼', '👩‍💻', '🧑‍🔧'].map((e, i) => (
-                  <div key={i}
-                    className="w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs"
-                    style={{ background: '#DDE3DF', borderColor: 'var(--bg)' }}
-                  >
-                    {e}
-                  </div>
-                ))}
-              </div>
-              <p className="text-xs" style={{ color: 'var(--muted)' }}>
-                <span className="font-bold" style={{ color: 'var(--text)' }}>
-                  Restaurants · Salons · Boutiques
-                </span>
-                {' '}— prêts en 2 min
-              </p>
-            </div>
+            <p style={{ marginTop: 20, fontSize: 13, color: P.muted }}>
+              Gratuit pour commencer · Aucune carte bancaire requise
+            </p>
           </div>
 
-          {/* Hero card */}
-          <div className="flex justify-center">
-            <div className="relative w-64 md:w-72">
-              <div className="rounded-3xl p-6 shadow-2xl text-white"
-                style={{ background: 'linear-gradient(135deg, #263035, #3a4a50)' }}
-              >
-                <div className="flex justify-between items-start mb-5">
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest mb-1 opacity-60"
-                      style={{ color: '#8FA8A0' }}>
-                      Programme Fidélité
-                    </p>
-                    <p className="font-black text-lg text-white">Café du Marché</p>
-                  </div>
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
-                    style={{ background: '#8FA8A020' }}>
-                    ☕
-                  </div>
-                </div>
-                <div className="grid grid-cols-5 gap-2 mb-5">
-                  {Array.from({ length: 10 }).map((_, j) => (
-                    <div key={j}
-                      className="aspect-square rounded-lg border-2 transition-all"
-                      style={{
-                        background:    j < 7 ? '#8FA8A0' : 'transparent',
-                        borderColor:   j < 7 ? '#8FA8A0' : 'rgba(255,255,255,0.15)',
-                      }}
-                    />
-                  ))}
-                </div>
-                <div className="flex justify-between items-end border-t border-white/10 pt-4">
-                  <div>
-                    <p className="text-white/50 text-[10px] uppercase tracking-wider">Récompense</p>
-                    <p className="font-bold text-sm mt-0.5 text-white">1 café offert</p>
-                  </div>
-                  <p className="font-black text-2xl" style={{ color: '#8FA8A0' }}>7/10</p>
-                </div>
-              </div>
-              <div className="absolute -top-3 -right-3 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg text-white"
-                style={{ background: '#8FA8A0' }}>
-                +1 tampon ✓
-              </div>
+          {/* Right – card preview */}
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <div style={{ transition: 'opacity 0.4s', opacity: animating ? 0.7 : 1 }}>
+              <CardMockup theme={THEMES[active]} />
             </div>
           </div>
         </div>
       </section>
 
-      {/* ═══════════ STATS ═══════════ */}
-      <section className="border-y py-10"
-        style={{ background: '#263035', borderColor: '#3a4a50' }}
-      >
-        <div className="max-w-5xl mx-auto px-5">
-          <div className="grid grid-cols-3 gap-4 text-center divide-x divide-[#3a4a50]">
+      {/* ── STATS ── */}
+      <section style={{ background: P.dark, padding: '48px 24px' }}>
+        <div style={{ maxWidth: 800, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 2 }}>
+          {[
+            { n: '2 min', l: 'Pour créer votre carte' },
+            { n: '0 €',   l: 'Pour commencer' },
+            { n: '100%',  l: 'Digital & sans papier' },
+            { n: '∞',     l: 'Clients à fidéliser' },
+          ].map((s) => (
+            <div key={s.n} style={{ textAlign: 'center', padding: '8px 0' }}>
+              <div style={{ fontSize: 36, fontWeight: 800, color: P.accent, lineHeight: 1 }}>{s.n}</div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', marginTop: 6 }}>{s.l}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── FEATURES ── */}
+      <section id="features" style={{ padding: '80px 24px' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 56 }}>
+            <p style={{ fontSize: 13, fontWeight: 600, letterSpacing: 2, color: P.accent, marginBottom: 12, textTransform: 'uppercase' }}>Fonctionnalités</p>
+            <h2 style={{ fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 800, color: P.text, margin: '0 0 14px' }}>Tout ce qu'il vous faut</h2>
+            <p style={{ fontSize: 16, color: P.muted, maxWidth: 480, margin: '0 auto' }}>Conçu pour les commerçants qui veulent aller à l'essentiel.</p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20 }}>
             {[
-              { n: '2 min', label: 'Pour créer votre carte' },
-              { n: '0 €',   label: 'Pour commencer' },
-              { n: '100%',  label: 'Digital, zéro papier' },
-            ].map((s) => (
-              <div key={s.n} className="px-2 md:px-6"
-                style={{ borderColor: '#3a4a50' }}>
-                <p className="text-2xl md:text-4xl font-black mb-1" style={{ color: '#8FA8A0' }}>{s.n}</p>
-                <p className="text-xs md:text-sm" style={{ color: '#B8C9BF' }}>{s.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════ FEATURES ═══════════ */}
-      <section id="fonctionnalites" className="py-20 md:py-24" style={{ background: 'var(--bg)' }}>
-        <div className="max-w-5xl mx-auto px-5">
-          <div className="text-center mb-12 md:mb-16">
-            <p className="text-[11px] font-bold uppercase tracking-widest mb-3" style={{ color: '#8FA8A0' }}>
-              Fonctionnalités
-            </p>
-            <h2 className="text-3xl md:text-4xl font-black tracking-tight" style={{ color: 'var(--text)' }}>
-              Tout ce dont votre commerce a besoin
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
-            {features.map((f) => (
+              { icon: '⚡', title: 'Création instantanée', desc: 'Votre carte de fidélité est prête en moins de 2 minutes, sans aucune compétence technique.' },
+              { icon: '📱', title: 'Mobile first', desc: 'Vos clients accèdent à leur carte depuis n\'importe quel smartphone, sans application à installer.' },
+              { icon: '🎨', title: 'Thèmes personnalisés', desc: 'Choisissez parmi des dizaines de designs — classiques, luxe, manga — ou créez le vôtre.' },
+              { icon: '🔔', title: 'Notifications ciblées', desc: 'Envoyez des offres à vos clients au bon moment, directement sur leur téléphone.' },
+              { icon: '📊', title: 'Tableau de bord', desc: 'Suivez les tampons, les visites et les récompenses en temps réel depuis votre espace.' },
+              { icon: '🔒', title: 'Sécurisé', desc: 'Données hébergées en Europe, authentification sécurisée, RGPD respecté.' },
+            ].map(f => (
               <div key={f.title}
-                className="group rounded-2xl md:rounded-3xl p-6 border transition-all duration-300 cursor-default"
                 style={{
-                  background: 'var(--card)',
-                  borderColor: 'var(--border)',
+                  background: P.card, border: `1px solid ${P.border}`,
+                  borderRadius: 12, padding: '28px 24px', transition: 'border-color 0.2s, box-shadow 0.2s',
                 }}
                 onMouseEnter={e => {
-                  (e.currentTarget as HTMLElement).style.borderColor = '#8FA8A0'
-                  ;(e.currentTarget as HTMLElement).style.boxShadow = '0 8px 32px #8FA8A020'
+                  const el = e.currentTarget
+                  el.style.borderColor = P.accent
+                  el.style.boxShadow = `0 4px 20px rgba(201,169,110,0.12)`
                 }}
                 onMouseLeave={e => {
-                  (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'
-                  ;(e.currentTarget as HTMLElement).style.boxShadow = 'none'
+                  const el = e.currentTarget
+                  el.style.borderColor = P.border
+                  el.style.boxShadow = 'none'
                 }}
               >
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl mb-4 transition-all duration-300"
-                  style={{ background: '#DDE3DF' }}>
-                  {f.icon}
-                </div>
-                <h3 className="font-black text-sm md:text-base mb-1.5" style={{ color: 'var(--text)' }}>
-                  {f.title}
-                </h3>
-                <p className="text-xs md:text-sm leading-relaxed" style={{ color: 'var(--muted)' }}>
-                  {f.desc}
-                </p>
+                <div style={{ fontSize: 28, marginBottom: 16 }}>{f.icon}</div>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: P.text, margin: '0 0 8px' }}>{f.title}</h3>
+                <p style={{ fontSize: 14, color: P.muted, lineHeight: 1.6, margin: 0 }}>{f.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══════════ HOW IT WORKS ═══════════ */}
-      <section id="comment" className="py-20 md:py-24 border-y" style={{ background: 'var(--bg2)', borderColor: 'var(--border)' }}>
-        <div className="max-w-5xl mx-auto px-5">
-          <div className="text-center mb-12 md:mb-16">
-            <p className="text-[11px] font-bold uppercase tracking-widest mb-3" style={{ color: '#8FA8A0' }}>
-              Processus
-            </p>
-            <h2 className="text-3xl md:text-4xl font-black tracking-tight" style={{ color: 'var(--text)' }}>
-              Comment ça marche ?
-            </h2>
+      {/* ── HOW IT WORKS ── */}
+      <section id="how" style={{ background: P.bg2, padding: '80px 24px' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 56 }}>
+            <p style={{ fontSize: 13, fontWeight: 600, letterSpacing: 2, color: P.accent, marginBottom: 12, textTransform: 'uppercase' }}>Démarrage</p>
+            <h2 style={{ fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 800, color: P.text, margin: 0 }}>En 4 étapes simples</h2>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 relative">
-            <div className="hidden md:block absolute top-7 left-[12.5%] right-[12.5%] h-px"
-              style={{ background: 'var(--clair)' }} />
-            {steps.map((s) => (
-              <div key={s.n} className="text-center relative z-10">
-                <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl font-black text-base md:text-lg flex items-center justify-center mx-auto mb-4 shadow-lg text-white"
-                  style={{ background: 'linear-gradient(135deg, #263035, #8FA8A0)' }}>
-                  {s.n}
-                </div>
-                <h3 className="font-bold text-xs md:text-sm mb-1.5" style={{ color: 'var(--text)' }}>{s.label}</h3>
-                <p className="text-xs leading-relaxed" style={{ color: 'var(--muted)' }}>{s.desc}</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 32 }}>
+            {[
+              { n: '01', title: 'Créez votre compte', desc: 'Inscription gratuite en 30 secondes.' },
+              { n: '02', title: 'Configurez votre carte', desc: 'Nom, logo, thème et nombre de tampons.' },
+              { n: '03', title: 'Partagez le lien', desc: 'Un QR code ou lien à afficher en caisse.' },
+              { n: '04', title: 'Fidélisez', desc: 'Tamponnez à chaque visite, récompensez automatiquement.' },
+            ].map(s => (
+              <div key={s.n} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div style={{
+                  fontSize: 13, fontWeight: 800, color: P.accent,
+                  letterSpacing: 1, opacity: 0.8,
+                }}>{s.n}</div>
+                <div style={{ height: 1, background: P.border }} />
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: P.text, margin: 0 }}>{s.title}</h3>
+                <p style={{ fontSize: 14, color: P.muted, lineHeight: 1.6, margin: 0 }}>{s.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══════════ CAROUSEL THÈMES ═══════════ */}
-      <section id="themes" className="py-20 md:py-24" style={{ background: 'var(--bg)' }}>
-        <div className="max-w-5xl mx-auto px-5">
-          <div className="text-center mb-12 md:mb-16">
-            <p className="text-[11px] font-bold uppercase tracking-widest mb-3" style={{ color: '#8FA8A0' }}>
-              Personnalisation
-            </p>
-            <h2 className="text-3xl md:text-4xl font-black tracking-tight" style={{ color: 'var(--text)' }}>
-              Des cartes à votre image
-            </h2>
-            <p className="mt-4 max-w-md mx-auto text-sm" style={{ color: 'var(--muted)' }}>
-              4 univers de thèmes — chacun avec sa propre identité visuelle.
-            </p>
+      {/* ── CAROUSEL THÈMES ── */}
+      <section style={{ padding: '80px 24px' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 56 }}>
+            <p style={{ fontSize: 13, fontWeight: 600, letterSpacing: 2, color: P.accent, marginBottom: 12, textTransform: 'uppercase' }}>Thèmes</p>
+            <h2 style={{ fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 800, color: P.text, margin: '0 0 14px' }}>Votre carte, votre style</h2>
+            <p style={{ fontSize: 16, color: P.muted }}>Du classique intemporel aux univers manga — choisissez l'ambiance qui vous ressemble.</p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
-            {/* Carte preview */}
-            <div className="flex justify-center order-2 md:order-1">
-              <div className="relative w-64 md:w-72">
-                <div className="absolute inset-0 rounded-3xl opacity-30 blur-xl transition-all duration-500"
-                  style={{ background: current.bg }} />
-                <div
-                  className="relative rounded-3xl p-6 shadow-2xl transition-all duration-500"
-                  style={{
-                    background: current.bg,
-                    opacity: animating ? 0 : 1,
-                    transform: animating ? 'scale(0.95)' : 'scale(1)',
-                  }}
-                >
-                  <div className="flex justify-between items-start mb-5">
-                    <div>
-                      <p className="text-[11px] font-bold uppercase tracking-widest mb-1"
-                        style={{ color: current.accent, opacity: 0.7 }}>
-                        {current.label}
-                      </p>
-                      <p className="font-black text-lg text-white">{current.preview.name}</p>
-                    </div>
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
-                      style={{ background: `${current.accent}22` }}>
-                      {current.emoji}
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-5 gap-2 mb-5">
-                    {Array.from({ length: current.preview.total }).map((_, j) => (
-                      <div key={j}
-                        className="aspect-square rounded-lg border-2 transition-all"
-                        style={{
-                          background:  j < current.preview.stamps ? current.accent : 'transparent',
-                          borderColor: j < current.preview.stamps ? current.accent : 'rgba(255,255,255,0.15)',
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <div className="flex justify-between items-end border-t border-white/10 pt-4">
-                    <div>
-                      <p className="text-white/50 text-[10px] uppercase tracking-wider">Récompense</p>
-                      <p className="font-bold text-sm text-white mt-0.5">{current.preview.reward}</p>
-                    </div>
-                    <p className="font-black text-xl" style={{ color: current.accent }}>
-                      {current.preview.stamps}/{current.preview.total}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Flèches */}
-                {[-1, 1].map((dir) => (
-                  <button key={dir}
-                    onClick={() => goTo((slide + dir + CARD_SLIDES.length) % CARD_SLIDES.length)}
-                    className="absolute top-1/2 -translate-y-1/2 w-9 h-9 rounded-full border flex items-center justify-center text-xs transition-all hover:scale-110 shadow-md"
-                    style={{
-                      [dir === -1 ? 'left' : 'right']: '-20px',
-                      background: 'var(--card)',
-                      borderColor: 'var(--border)',
-                      color: 'var(--accent)',
-                    }}
-                  >
-                    {dir === -1 ? '◀' : '▶'}
-                  </button>
-                ))}
-              </div>
-            </div>
-
+          <div style={{ display: 'flex', gap: 40, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
             {/* Sélecteur */}
-            <div className="order-1 md:order-2 space-y-3">
-              {CARD_SLIDES.map((t, i) => (
-                <button key={t.id} onClick={() => goTo(i)}
-                  className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all duration-300"
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {THEMES.map((t, i) => (
+                <button key={t.label} onClick={() => goTo(i)}
                   style={{
-                    borderColor: i === slide ? '#8FA8A0'     : 'var(--border)',
-                    background:  i === slide ? 'var(--card)' : 'transparent',
-                    boxShadow:   i === slide ? '0 4px 20px #8FA8A020' : 'none',
-                  }}
-                >
-                  <div className="w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center text-2xl shadow-sm"
-                    style={{ background: t.bg }}>
-                    {t.emoji}
+                    display: 'flex', alignItems: 'center', gap: 12, padding: '12px 18px',
+                    borderRadius: 10, border: `1px solid ${active === i ? P.accent : P.border}`,
+                    background: active === i ? P.bg2 : P.card,
+                    cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s',
+                    minWidth: 190,
+                  }}>
+                  <div style={{
+                    width: 28, height: 28, borderRadius: 8,
+                    background: `linear-gradient(135deg, ${t.from}, ${t.to})`,
+                    flexShrink: 0,
+                  }} />
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: P.text }}>{t.label}</div>
+                    <div style={{ fontSize: 12, color: P.muted }}>{t.sub}</div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-black text-sm" style={{ color: i === slide ? 'var(--text)' : 'var(--muted)' }}>
-                      {t.label}
-                    </p>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--muted)', opacity: 0.7 }}>
-                      {t.subtitle}
-                    </p>
-                  </div>
-                  {i === slide && (
-                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: '#8FA8A0' }} />
-                  )}
                 </button>
               ))}
-
-              {/* Dots */}
-              <div className="flex justify-center gap-2 pt-2">
-                {CARD_SLIDES.map((_, i) => (
-                  <button key={i} onClick={() => goTo(i)}
-                    className="rounded-full transition-all duration-300"
-                    style={{
-                      width:      i === slide ? '24px'   : '8px',
-                      height:     '8px',
-                      background: i === slide ? '#8FA8A0' : '#B8C9BF',
-                    }}
-                  />
-                ))}
-              </div>
             </div>
+
+            {/* Card preview */}
+            <div style={{ transition: 'all 0.4s', opacity: animating ? 0.6 : 1, transform: animating ? 'scale(0.97)' : 'scale(1)' }}>
+              <CardMockup theme={THEMES[active]} />
+            </div>
+          </div>
+
+          {/* Dots */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 32 }}>
+            {THEMES.map((_, i) => (
+              <button key={i} onClick={() => goTo(i)} style={{
+                width: active === i ? 24 : 8, height: 8, borderRadius: 4,
+                background: active === i ? P.accent : P.border,
+                border: 'none', cursor: 'pointer', padding: 0, transition: 'all 0.3s',
+              }} />
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ═══════════ CONTACT ═══════════ */}
-      <section id="contact" className="py-20 md:py-24 border-y" style={{ background: 'var(--bg2)', borderColor: 'var(--border)' }}>
-        <div className="max-w-3xl mx-auto px-5 text-center">
-          <p className="text-[11px] font-bold uppercase tracking-widest mb-3" style={{ color: '#8FA8A0' }}>
-            Contact
-          </p>
-          <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-4 leading-tight"
-            style={{ color: 'var(--text)' }}>
-            Prêt à passer au niveau supérieur ?
-          </h2>
-          <p className="text-base max-w-md mx-auto mb-12" style={{ color: 'var(--muted)' }}>
-            Je réponds sous 24h pour discuter de vos objectifs et vous proposer la solution la plus adaptée.
+      {/* ── CONTACT ── */}
+      <section id="contact" style={{ background: P.bg2, padding: '80px 24px' }}>
+        <div style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
+          <p style={{ fontSize: 13, fontWeight: 600, letterSpacing: 2, color: P.accent, marginBottom: 12, textTransform: 'uppercase' }}>Contact</p>
+          <h2 style={{ fontSize: 'clamp(28px, 4vw, 36px)', fontWeight: 800, color: P.text, margin: '0 0 14px' }}>Une question ?</h2>
+          <p style={{ fontSize: 16, color: P.muted, margin: '0 0 40px', lineHeight: 1.7 }}>
+            Notre équipe est disponible pour vous accompagner dans la mise en place de votre programme fidélité.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-xl mx-auto">
+          <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
             {[
-              { href: 'https://calendly.com/kurt-digital-lrvr/45min', icon: '📅', label: 'Réserver un créneau', ext: true },
-              { href: 'mailto:kurt.digital@outlook.fr',                icon: '✉️', label: 'Envoyer un mail',     ext: false },
-              { href: 'tel:+33767582363',                               icon: '📞', label: 'Appeler',             ext: false },
-            ].map(btn => (
-              <a key={btn.href} href={btn.href}
-                target={btn.ext ? '_blank' : undefined}
-                rel={btn.ext ? 'noopener noreferrer' : undefined}
-                className="flex flex-col items-center gap-3 rounded-2xl p-6 transition-all hover:scale-105 duration-300 shadow-md hover:shadow-xl text-white font-black text-sm"
-                style={{ background: 'linear-gradient(135deg, #263035, #3a4a50)' }}
-                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'linear-gradient(135deg, #8FA8A0, #263035)')}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'linear-gradient(135deg, #263035, #3a4a50)')}
+              { icon: '📅', label: 'Prendre RDV', href: 'https://calendly.com/kurt-digital-lrvr/45min', primary: true },
+              { icon: '✉️', label: 'Envoyer un mail', href: 'mailto:kurt.digital@outlook.fr', primary: false },
+              { icon: '📞', label: '+33 7 67 58 23 63', href: 'tel:+33767582363', primary: false },
+            ].map(c => (
+              <a key={c.label} href={c.href} target="_blank" rel="noopener noreferrer"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  padding: '13px 22px', borderRadius: 10, textDecoration: 'none',
+                  fontSize: 14, fontWeight: 600,
+                  background: c.primary ? P.dark : P.card,
+                  color: c.primary ? '#fff' : P.text,
+                  border: `1px solid ${c.primary ? P.dark : P.border}`,
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={e => {
+                  const el = e.currentTarget
+                  el.style.background = c.primary ? P.dark2 : P.bg2
+                  el.style.borderColor = c.primary ? P.dark2 : P.accent
+                }}
+                onMouseLeave={e => {
+                  const el = e.currentTarget
+                  el.style.background = c.primary ? P.dark : P.card
+                  el.style.borderColor = c.primary ? P.dark : P.border
+                }}
               >
-                <span className="text-3xl">{btn.icon}</span>
-                <span>{btn.label}</span>
+                <span>{c.icon}</span> {c.label}
               </a>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══════════ CTA FINAL ═══════════ */}
-      <section className="py-20 relative overflow-hidden" style={{ background: '#263035' }}>
-        <div className="absolute inset-0 opacity-[0.04] pointer-events-none"
-          style={{ backgroundImage: 'radial-gradient(circle, #8FA8A0 1px, transparent 1px)', backgroundSize: '26px 26px' }} />
-        <div className="relative max-w-xl mx-auto px-5 text-center">
-          <h2 className="text-3xl md:text-4xl font-black mb-4 tracking-tight leading-tight"
-            style={{ color: '#D4C5B0' }}>
-            Votre programme de fidélité,<br />enfin à la hauteur de votre commerce.
+      {/* ── CTA FINAL ── */}
+      <section style={{ background: P.dark, padding: '80px 24px' }}>
+        <div style={{ maxWidth: 600, margin: '0 auto', textAlign: 'center' }}>
+          <h2 style={{ fontSize: 'clamp(28px, 4vw, 42px)', fontWeight: 800, color: '#fff', margin: '0 0 16px' }}>
+            Prêt à démarrer ?
           </h2>
-          <p className="text-sm mb-8" style={{ color: '#8FA8A0' }}>
-            Gratuit, sans engagement, opérationnel en 2 minutes.
+          <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.6)', margin: '0 0 36px', lineHeight: 1.7 }}>
+            Rejoignez les commerçants qui ont déjà digitalisé leur programme de fidélité.
           </p>
-          <Link href={loggedIn ? '/dashboard' : '/register'}
-            className="inline-block px-10 py-4 rounded-2xl font-black text-base transition hover:opacity-90 shadow-2xl"
-            style={{
-              background: '#8FA8A0',
-              color: '#263035',
-              boxShadow: '0 8px 32px #8FA8A040',
-            }}
-          >
-            {loggedIn ? 'Accéder à mon espace →' : 'Créer mon programme gratuitement →'}
+          <Link href="/register" style={{
+            display: 'inline-block', padding: '16px 36px', borderRadius: 10,
+            background: P.accent, color: P.dark, fontWeight: 700, fontSize: 16,
+            textDecoration: 'none',
+          }}>
+            Créer mon programme gratuitement
           </Link>
+          <p style={{ marginTop: 18, fontSize: 13, color: 'rgba(255,255,255,0.35)' }}>
+            Aucune carte bancaire · Gratuit pour commencer
+          </p>
         </div>
       </section>
 
-      {/* ═══════════ FOOTER ═══════════ */}
-      <footer className="border-t py-8" style={{ background: '#1c2428', borderColor: '#3a4a50' }}>
-        <div className="max-w-6xl mx-auto px-5">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-5">
-
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-                style={{ background: 'linear-gradient(135deg, #263035, #8FA8A0)' }}>
-                <span className="text-sm">💎</span>
-              </div>
-              <span className="font-black text-sm" style={{ color: '#DDE3DF' }}>Digital Fidélité</span>
+      {/* ── FOOTER ── */}
+      <footer style={{ background: '#141c24', padding: '28px 24px', textAlign: 'center' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: P.dark2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ color: P.accent, fontSize: 13, fontWeight: 800 }}>F</span>
             </div>
-
-            <div className="flex flex-wrap justify-center items-center gap-4 md:gap-5 text-xs"
-              style={{ color: '#8FA8A0' }}>
-              <a href="mailto:kurt.digital@outlook.fr" className="hover:text-[#B8C9BF] transition">kurt.digital@outlook.fr</a>
-              <span className="opacity-30">·</span>
-              <a href="tel:+33767582363"               className="hover:text-[#B8C9BF] transition">+33 7 67 58 23 63</a>
-              <span className="opacity-30">·</span>
-              <a href="https://calendly.com/kurt-digital-lrvr/45min" target="_blank" rel="noopener noreferrer" className="hover:text-[#B8C9BF] transition">Calendly</a>
-            </div>
-
-            <div className="flex items-center gap-4 text-xs" style={{ color: '#3a4a50' }}>
-              <a href="https://kurt-digital.com/" target="_blank" rel="noopener noreferrer"
-                className="transition font-semibold"
-                style={{ color: '#8FA8A0' }}
-                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = '#B8C9BF')}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = '#8FA8A0')}
-              >
-                Réalisé par Kurt Digital
-              </a>
-              <span style={{ color: '#3a4a50' }}>·</span>
-              <span>© 2026</span>
-              {mounted && (
-                <button onClick={toggle} className="transition flex items-center gap-1 hover:text-[#8FA8A0]">
-                  {theme === 'dark' ? '☀️' : '🌙'}
-                </button>
-              )}
-            </div>
+            <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13 }}>Fidéliter</span>
+          </div>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)', margin: 0 }}>
+            Réalisé par{' '}
+            <a href="https://kurt-digital.com/" target="_blank" rel="noopener noreferrer"
+              style={{ color: P.accent, textDecoration: 'none', fontWeight: 600 }}>
+              Kurt Digital
+            </a>
+          </p>
+          <div style={{ display: 'flex', gap: 20 }}>
+            {[['Connexion', '/login'], ['Créer un compte', '/register']].map(([l, h]) => (
+              <Link key={l} href={h} style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', textDecoration: 'none' }}>{l}</Link>
+            ))}
           </div>
         </div>
       </footer>
+
     </div>
   )
 }
