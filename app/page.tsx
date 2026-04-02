@@ -16,103 +16,234 @@ const P = {
 }
 
 /* ─── Thèmes cartes ─── */
-const THEMES = [
+interface Theme {
+  label: string
+  sub: string
+  bg: string           // fond principal
+  accent: string       // couleur d'accent (tampons, textes forts)
+  textColor: string    // couleur texte principal
+  mutedColor: string   // texte secondaire
+  stampFill: string    // tampon validé
+  stampEmpty: string   // tampon vide
+  deco: React.ReactNode // décoration SVG unique
+}
+
+const THEMES: Theme[] = [
   {
     label: 'Classique',
-    sub:   'Élégant & intemporel',
-    from:  '#2C3E50',
-    to:    '#34495e',
-    dot:   '#C9A96E',
-    emoji: '♠',
+    sub: 'Élégant & intemporel',
+    bg: 'linear-gradient(135deg, #1a2535 0%, #2c3e50 60%, #34495e 100%)',
+    accent: '#C9A96E',
+    textColor: '#fff',
+    mutedColor: 'rgba(255,255,255,0.55)',
+    stampFill: '#C9A96E',
+    stampEmpty: 'rgba(255,255,255,0.15)',
+    deco: (
+      <svg width="160" height="160" viewBox="0 0 160 160" fill="none" style={{ position: 'absolute', right: -30, top: -30, opacity: 0.07 }}>
+        <circle cx="80" cy="80" r="70" stroke="#C9A96E" strokeWidth="2"/>
+        <circle cx="80" cy="80" r="50" stroke="#C9A96E" strokeWidth="1"/>
+        <circle cx="80" cy="80" r="30" stroke="#C9A96E" strokeWidth="1"/>
+        <line x1="10" y1="80" x2="150" y2="80" stroke="#C9A96E" strokeWidth="1"/>
+        <line x1="80" y1="10" x2="80" y2="150" stroke="#C9A96E" strokeWidth="1"/>
+      </svg>
+    ),
   },
   {
     label: 'Luxe',
-    sub:   'Or & prestige',
-    from:  '#1A1A2E',
-    to:    '#16213E',
-    dot:   '#D4AF37',
-    emoji: '◆',
+    sub: 'Or & prestige',
+    bg: 'linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 50%, #2a1f0e 100%)',
+    accent: '#D4AF37',
+    textColor: '#F5E6C8',
+    mutedColor: 'rgba(212,175,55,0.6)',
+    stampFill: '#D4AF37',
+    stampEmpty: 'rgba(212,175,55,0.15)',
+    deco: (
+      <svg width="180" height="180" viewBox="0 0 180 180" fill="none" style={{ position: 'absolute', right: -40, top: -40, opacity: 0.12 }}>
+        <polygon points="90,10 110,70 175,70 122,108 142,168 90,130 38,168 58,108 5,70 70,70" stroke="#D4AF37" strokeWidth="1.5" fill="none"/>
+        <polygon points="90,35 104,75 145,75 113,98 125,138 90,115 55,138 67,98 35,75 76,75" stroke="#D4AF37" strokeWidth="0.8" fill="none"/>
+      </svg>
+    ),
   },
   {
-    label: 'Naruto 🍥',
-    sub:   'Orange & spirale',
-    from:  '#D35400',
-    to:    '#E67E22',
-    dot:   '#F8F0E3',
-    emoji: '🍥',
+    label: 'Naruto',
+    sub: '木ノ葉隠れの里',
+    bg: 'linear-gradient(135deg, #cc3300 0%, #e85d04 40%, #f48c06 100%)',
+    accent: '#fff',
+    textColor: '#fff',
+    mutedColor: 'rgba(255,255,255,0.7)',
+    stampFill: '#fff',
+    stampEmpty: 'rgba(255,255,255,0.2)',
+    deco: (
+      <svg width="180" height="180" viewBox="0 0 100 100" fill="none" style={{ position: 'absolute', right: -20, bottom: -20, opacity: 0.15 }}>
+        {/* Konoha leaf symbol */}
+        <path d="M50 10 C50 10, 80 25, 85 50 C90 75, 70 88, 50 90 C30 88, 10 75, 15 50 C20 25, 50 10, 50 10Z" stroke="#fff" strokeWidth="2" fill="none"/>
+        <path d="M50 20 C50 20, 72 32, 76 50 C80 68, 65 80, 50 82 C35 80, 20 68, 24 50 C28 32, 50 20, 50 20Z" stroke="#fff" strokeWidth="1" fill="none"/>
+        <line x1="50" y1="10" x2="50" y2="90" stroke="#fff" strokeWidth="1.5"/>
+        {/* Spiral */}
+        <path d="M50 50 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0" stroke="#fff" strokeWidth="1.5" fill="none"/>
+        <path d="M50 50 m-8,0 a8,8 0 1,0 16,0" stroke="#fff" strokeWidth="1" fill="none"/>
+        <path d="M50 50 m-14,0 a14,14 0 1,0 28,0" stroke="#fff" strokeWidth="0.8" fill="none"/>
+      </svg>
+    ),
   },
   {
     label: 'Demon Slayer',
-    sub:   'Tanjiro & eau',
-    from:  '#1a3a5c',
-    to:    '#2471a3',
-    dot:   '#7FB3D3',
-    emoji: '💧',
+    sub: '鬼滅の刃',
+    bg: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)',
+    accent: '#e8383d',
+    textColor: '#fff',
+    mutedColor: 'rgba(255,255,255,0.5)',
+    stampFill: '#e8383d',
+    stampEmpty: 'rgba(232,56,61,0.2)',
+    deco: (
+      <svg width="200" height="200" viewBox="0 0 200 200" fill="none" style={{ position: 'absolute', right: -10, top: 0, bottom: 0, margin: 'auto', opacity: 1 }}>
+        {/* Checkered pattern like Tanjiro's haori */}
+        {Array.from({ length: 8 }).map((_, row) =>
+          Array.from({ length: 8 }).map((__, col) => (
+            (row + col) % 2 === 0 ? (
+              <rect key={`${row}-${col}`} x={col * 25} y={row * 25} width="25" height="25" fill="#1a7a2a" opacity="0.35"/>
+            ) : (
+              <rect key={`${row}-${col}`} x={col * 25} y={row * 25} width="25" height="25" fill="#0a0a0a" opacity="0.35"/>
+            )
+          ))
+        )}
+        {/* Blade diagonal */}
+        <line x1="120" y1="0" x2="200" y2="200" stroke="#e8383d" strokeWidth="2" opacity="0.6"/>
+        <line x1="140" y1="0" x2="200" y2="150" stroke="#e8383d" strokeWidth="0.8" opacity="0.3"/>
+      </svg>
+    ),
   },
   {
     label: 'Dragon Ball Z',
-    sub:   'Goku & énergie',
-    from:  '#1565C0',
-    to:    '#0D47A1',
-    dot:   '#FFD600',
-    emoji: '⚡',
+    sub: 'ドラゴンボールZ',
+    bg: 'linear-gradient(135deg, #1a3a6e 0%, #1565C0 50%, #0d3080 100%)',
+    accent: '#FFD600',
+    textColor: '#fff',
+    mutedColor: 'rgba(255,255,255,0.6)',
+    stampFill: '#FFD600',
+    stampEmpty: 'rgba(255,214,0,0.2)',
+    deco: (
+      <svg width="200" height="180" viewBox="0 0 200 180" fill="none" style={{ position: 'absolute', right: -20, top: -10, opacity: 1 }}>
+        {/* Dragon Ball with star */}
+        <circle cx="150" cy="50" r="40" fill="#FF8C00" opacity="0.25"/>
+        <circle cx="150" cy="50" r="40" stroke="#FFD600" strokeWidth="1.5" opacity="0.4" fill="none"/>
+        {/* 4-star */}
+        <circle cx="143" cy="43" r="5" fill="#e8383d" opacity="0.7"/>
+        <circle cx="157" cy="43" r="5" fill="#e8383d" opacity="0.7"/>
+        <circle cx="143" cy="57" r="5" fill="#e8383d" opacity="0.7"/>
+        <circle cx="157" cy="57" r="5" fill="#e8383d" opacity="0.7"/>
+        {/* Aura lines */}
+        <line x1="0" y1="90" x2="200" y2="90" stroke="#FFD600" strokeWidth="0.5" opacity="0.15"/>
+        <line x1="20" y1="110" x2="180" y2="70" stroke="#FFD600" strokeWidth="0.5" opacity="0.1"/>
+        <line x1="0" y1="130" x2="200" y2="50" stroke="#FFD600" strokeWidth="0.5" opacity="0.1"/>
+        {/* Power kanji 力 simplified */}
+        <text x="30" y="140" fontSize="70" fill="#FFD600" opacity="0.08" fontWeight="bold">力</text>
+      </svg>
+    ),
+  },
+  {
+    label: 'One Piece',
+    sub: 'ひとつなぎの大秘宝',
+    bg: 'linear-gradient(135deg, #c0392b 0%, #e74c3c 50%, #922b21 100%)',
+    accent: '#F9E04B',
+    textColor: '#fff',
+    mutedColor: 'rgba(255,255,255,0.65)',
+    stampFill: '#F9E04B',
+    stampEmpty: 'rgba(249,224,75,0.2)',
+    deco: (
+      <svg width="200" height="200" viewBox="0 0 200 200" fill="none" style={{ position: 'absolute', right: -20, top: -20, opacity: 1 }}>
+        {/* Jolly Roger skull outline */}
+        <circle cx="130" cy="70" r="45" stroke="#F9E04B" strokeWidth="1.5" fill="rgba(249,224,75,0.06)"/>
+        <circle cx="118" cy="62" r="7" fill="#F9E04B" opacity="0.5"/>
+        <circle cx="142" cy="62" r="7" fill="#F9E04B" opacity="0.5"/>
+        <path d="M118 82 Q130 92 142 82" stroke="#F9E04B" strokeWidth="2" fill="none" opacity="0.5"/>
+        {/* Crossbones */}
+        <line x1="90" y1="108" x2="170" y2="128" stroke="#F9E04B" strokeWidth="2.5" strokeLinecap="round" opacity="0.3"/>
+        <line x1="170" y1="108" x2="90" y2="128" stroke="#F9E04B" strokeWidth="2.5" strokeLinecap="round" opacity="0.3"/>
+        {/* Straw hat brim */}
+        <ellipse cx="130" cy="28" rx="50" ry="10" stroke="#F9E04B" strokeWidth="1.5" fill="none" opacity="0.4"/>
+        <line x1="80" y1="28" x2="180" y2="28" stroke="#F9E04B" strokeWidth="1" opacity="0.2"/>
+        {/* Ocean waves */}
+        <path d="M0 160 Q20 145 40 160 Q60 175 80 160 Q100 145 120 160" stroke="#F9E04B" strokeWidth="1" fill="none" opacity="0.2"/>
+        <path d="M60 180 Q80 165 100 180 Q120 195 140 180 Q160 165 180 180" stroke="#F9E04B" strokeWidth="1" fill="none" opacity="0.2"/>
+      </svg>
+    ),
   },
 ]
 
-/* ─── Card mockup ─── */
-function CardMockup({ theme }: { theme: typeof THEMES[0] }) {
+/* ─── Card mockup horizontal (format bancaire) ─── */
+function CardMockup({ theme }: { theme: Theme }) {
   return (
-    <div
-      style={{
-        background: `linear-gradient(135deg, ${theme.from}, ${theme.to})`,
-        borderRadius: 16,
-        padding: '28px 24px',
-        color: '#fff',
-        minWidth: 260,
-        maxWidth: 320,
-        boxShadow: '0 20px 60px rgba(0,0,0,0.18)',
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
-      {/* decorative circle */}
-      <div style={{
-        position: 'absolute', right: -20, top: -20,
-        width: 120, height: 120, borderRadius: '50%',
-        background: 'rgba(255,255,255,0.06)',
-      }} />
-      <div style={{
-        position: 'absolute', right: 20, bottom: -30,
-        width: 80, height: 80, borderRadius: '50%',
-        background: 'rgba(255,255,255,0.04)',
-      }} />
+    <div style={{
+      width: 340,
+      height: 214,
+      borderRadius: 18,
+      background: theme.bg,
+      color: theme.textColor,
+      position: 'relative',
+      overflow: 'hidden',
+      boxShadow: '0 24px 64px rgba(0,0,0,0.30), 0 4px 12px rgba(0,0,0,0.15)',
+      flexShrink: 0,
+      fontFamily: "'Segoe UI', system-ui, sans-serif",
+    }}>
+      {/* Déco thème */}
+      {theme.deco}
 
-      <div style={{ fontSize: 10, opacity: 0.6, letterSpacing: 2, marginBottom: 20 }}>
-        CARTE FIDÉLITÉ
-      </div>
-      <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>
-        Café Lumière
-      </div>
-      <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 24 }}>
-        Marie Dupont
+      {/* Header */}
+      <div style={{ position: 'absolute', top: 18, left: 20, right: 20, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <div>
+          <div style={{ fontSize: 9, letterSpacing: 2.5, color: theme.mutedColor, textTransform: 'uppercase', marginBottom: 4 }}>
+            Carte Fidélité
+          </div>
+          <div style={{ fontSize: 16, fontWeight: 800, color: theme.textColor, lineHeight: 1 }}>
+            {theme.label}
+          </div>
+        </div>
+        {/* Chip */}
+        <div style={{
+          width: 32, height: 24, borderRadius: 4,
+          background: `linear-gradient(135deg, ${theme.accent}, ${theme.accent}aa)`,
+          opacity: 0.85,
+        }} />
       </div>
 
-      {/* stamps */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
+      {/* Tampons */}
+      <div style={{
+        position: 'absolute',
+        bottom: 40,
+        left: 20,
+        right: 20,
+        display: 'flex',
+        gap: 7,
+        flexWrap: 'wrap',
+      }}>
         {Array.from({ length: 10 }).map((_, i) => (
           <div key={i} style={{
-            width: 28, height: 28, borderRadius: '50%',
-            border: `2px solid rgba(255,255,255,${i < 7 ? 0.9 : 0.25})`,
-            background: i < 7 ? theme.dot : 'transparent',
+            width: 22, height: 22, borderRadius: '50%',
+            background: i < 7 ? theme.stampFill : theme.stampEmpty,
+            border: `1.5px solid ${i < 7 ? theme.stampFill : 'rgba(255,255,255,0.2)'}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 10,
+            fontSize: 10, color: i < 7 ? theme.bg.startsWith('linear') ? '#000' : theme.bg : 'transparent',
+            fontWeight: 700,
+            boxShadow: i < 7 ? `0 0 8px ${theme.stampFill}66` : 'none',
           }}>
             {i < 7 ? '✓' : ''}
           </div>
         ))}
       </div>
 
-      <div style={{ fontSize: 11, opacity: 0.6 }}>7 / 10 tampons</div>
+      {/* Footer */}
+      <div style={{
+        position: 'absolute', bottom: 14, left: 20, right: 20,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: theme.mutedColor }}>
+          MARIE DUPONT
+        </div>
+        <div style={{ fontSize: 11, color: theme.accent, fontWeight: 700 }}>
+          7 / 10 tampons
+        </div>
+      </div>
     </div>
   )
 }
@@ -373,16 +504,17 @@ export default function Home() {
                     borderRadius: 10, border: `1px solid ${active === i ? P.accent : P.border}`,
                     background: active === i ? P.bg2 : P.card,
                     cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s',
-                    minWidth: 190,
+                    minWidth: 200,
                   }}>
                   <div style={{
-                    width: 28, height: 28, borderRadius: 8,
-                    background: `linear-gradient(135deg, ${t.from}, ${t.to})`,
+                    width: 32, height: 32, borderRadius: 8,
+                    background: t.bg,
                     flexShrink: 0,
+                    border: `1px solid rgba(0,0,0,0.08)`,
                   }} />
                   <div>
                     <div style={{ fontSize: 14, fontWeight: 600, color: P.text }}>{t.label}</div>
-                    <div style={{ fontSize: 12, color: P.muted }}>{t.sub}</div>
+                    <div style={{ fontSize: 11, color: P.muted, fontStyle: 'italic' }}>{t.sub}</div>
                   </div>
                 </button>
               ))}
