@@ -20,24 +20,44 @@ interface WizardData {
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const COLORS = [
-  { value: '#6366f1', label: 'Indigo',   from: '#6366f1', to: '#8b5cf6' },
-  { value: '#3b82f6', label: 'Bleu',     from: '#3b82f6', to: '#6366f1' },
-  { value: '#0ea5e9', label: 'Cyan',     from: '#0ea5e9', to: '#3b82f6' },
-  { value: '#8b5cf6', label: 'Violet',   from: '#8b5cf6', to: '#a855f7' },
-  { value: '#ec4899', label: 'Rose',     from: '#ec4899', to: '#f43f5e' },
-  { value: '#ef4444', label: 'Rouge',    from: '#ef4444', to: '#ec4899' },
-  { value: '#f97316', label: 'Orange',   from: '#f97316', to: '#ef4444' },
-  { value: '#f59e0b', label: 'Ambre',    from: '#f59e0b', to: '#f97316' },
-  { value: '#10b981', label: 'Émeraude', from: '#10b981', to: '#059669' },
-  { value: '#14b8a6', label: 'Teal',     from: '#14b8a6', to: '#10b981' },
-  { value: '#22c55e', label: 'Vert',     from: '#22c55e', to: '#16a34a' },
-  { value: '#84cc16', label: 'Lime',     from: '#84cc16', to: '#65a30d' },
-  { value: '#1e293b', label: 'Ardoise',  from: '#1e293b', to: '#334155' },
-  { value: '#374151', label: 'Gris',     from: '#374151', to: '#1f2937' },
-  { value: '#7c3aed', label: 'Pourpre',  from: '#7c3aed', to: '#6d28d9' },
-  { value: '#db2777', label: 'Fuchsia',  from: '#db2777', to: '#9d174d' },
+const CARD_THEMES = [
+  // ── Luxe ──
+  { value: '#1B3A8C', label: '👑 Royal Navy',     from: '#1B3A8C', to: '#0f2460',  cat: 'Luxe' },
+  { value: '#C9A448', label: '✨ Or & Nuit',       from: '#1a1a2e', to: '#7B6914',  cat: 'Luxe' },
+  { value: '#C4A882', label: '🥂 Champagne',       from: '#C4A882', to: '#8B6F47',  cat: 'Luxe' },
+  { value: '#1a1a2e', label: '🌙 Midnight',        from: '#1a1a2e', to: '#2d1b69',  cat: 'Luxe' },
+  // ── Classique ──
+  { value: '#6366f1', label: 'Indigo',             from: '#6366f1', to: '#8b5cf6',  cat: 'Classique' },
+  { value: '#3b82f6', label: 'Bleu',               from: '#3b82f6', to: '#6366f1',  cat: 'Classique' },
+  { value: '#10b981', label: 'Émeraude',           from: '#10b981', to: '#059669',  cat: 'Classique' },
+  { value: '#ef4444', label: 'Rouge',              from: '#ef4444', to: '#b91c1c',  cat: 'Classique' },
+  { value: '#f97316', label: 'Orange',             from: '#f97316', to: '#ea580c',  cat: 'Classique' },
+  { value: '#f59e0b', label: 'Ambre',              from: '#f59e0b', to: '#d97706',  cat: 'Classique' },
+  { value: '#ec4899', label: 'Rose',               from: '#ec4899', to: '#db2777',  cat: 'Classique' },
+  { value: '#1e293b', label: 'Ardoise',            from: '#1e293b', to: '#334155',  cat: 'Classique' },
+  // ── Naruto ──
+  { value: '#f97316-naruto', label: '🍥 Naruto',   from: '#f97316', to: '#dc2626',  cat: 'Naruto' },
+  { value: '#1e1b4b-sasuke', label: '⚡ Sasuke',   from: '#1e1b4b', to: '#4c1d95',  cat: 'Naruto' },
+  { value: '#ec4899-sakura', label: '🌸 Sakura',   from: '#db2777', to: '#9d174d',  cat: 'Naruto' },
+  { value: '#475569-kakashi', label: '🌀 Kakashi', from: '#475569', to: '#1e293b',  cat: 'Naruto' },
+  { value: '#312e81-itachi', label: '🔮 Itachi',   from: '#312e81', to: '#1e1b4b',  cat: 'Naruto' },
+  // ── Demon Slayer ──
+  { value: '#064e3b-tanjiro', label: '🌊 Tanjiro', from: '#064e3b', to: '#1f2937',  cat: 'Demon Slayer' },
+  { value: '#a16207-zenitsu', label: '⚡ Zenitsu', from: '#a16207', to: '#78350f',  cat: 'Demon Slayer' },
+  { value: '#0e7490-inosuke', label: '🐗 Inosuke', from: '#0e7490', to: '#164e63',  cat: 'Demon Slayer' },
+  { value: '#ea580c-rengoku', label: '🔥 Rengoku', from: '#ea580c', to: '#991b1b',  cat: 'Demon Slayer' },
+  { value: '#7c3aed-shinobu', label: '🦋 Shinobu', from: '#7c3aed', to: '#4c1d95',  cat: 'Demon Slayer' },
+  // ── Dragon Ball Z ──
+  { value: '#f97316-goku',    label: '🔶 Goku',    from: '#f97316', to: '#1d4ed8',  cat: 'Dragon Ball Z' },
+  { value: '#1d4ed8-vegeta',  label: '👑 Vegeta',  from: '#1d4ed8', to: '#5b21b6',  cat: 'Dragon Ball Z' },
+  { value: '#fbbf24-ssj',     label: '✨ Super Saiyan', from: '#fbbf24', to: '#f59e0b', cat: 'Dragon Ball Z' },
+  { value: '#16a34a-piccolo', label: '💚 Piccolo', from: '#16a34a', to: '#052e16',  cat: 'Dragon Ball Z' },
+  { value: '#6b21a8-frieza',  label: '🌸 Freezer', from: '#6b21a8', to: '#1e1b4b',  cat: 'Dragon Ball Z' },
 ]
+
+// Backward compat: flat COLORS for CardPreview
+const COLORS = CARD_THEMES.map(t => ({ value: t.value, label: t.label, from: t.from, to: t.to }))
+const THEME_CATS = ['Luxe', 'Classique', 'Naruto', 'Demon Slayer', 'Dragon Ball Z'] as const
 
 const REWARD_SUGGESTIONS = [
   '1 café offert', '1 burger offert', '10% de remise',
@@ -403,33 +423,56 @@ function Step4Color({ data, onChange, onLogoUpload, uploading }: {
   uploading: boolean
 }) {
   const fileRef = useRef<HTMLInputElement>(null)
+  const [activeTab, setActiveTab] = useState<typeof THEME_CATS[number]>('Luxe')
+  const filteredThemes = CARD_THEMES.filter(t => t.cat === activeTab)
 
   return (
     <div className="fade-in-up flex flex-col gap-6">
       <div className="text-center">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Personnalisez votre carte</h2>
-        <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Couleur et logo (optionnel)</p>
+        <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Thème, couleur et logo (optionnel)</p>
       </div>
 
-      {/* Colors grid 4x4 */}
+      {/* Theme tabs + grid */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
-        <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">🎨 Couleur de la carte</p>
+        <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">🎨 Thème de la carte</p>
+
+        {/* Category tabs */}
+        <div className="flex gap-2 flex-wrap mb-4">
+          {THEME_CATS.map(cat => (
+            <button key={cat} onClick={() => setActiveTab(cat)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                activeTab === cat
+                  ? 'bg-indigo-600 text-white shadow-md'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-600'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* Colors grid */}
         <div className="grid grid-cols-4 gap-3">
-          {COLORS.map(c => (
+          {filteredThemes.map(c => (
             <button key={c.value}
               onClick={() => onChange('cardColor', c.value)}
-              className={`group relative aspect-square rounded-2xl transition-all duration-200
-                ${data.cardColor === c.value ? 'scale-110 ring-2 ring-offset-2 ring-gray-900 dark:ring-white' : 'hover:scale-105'}`}
+              className={`group relative rounded-2xl transition-all duration-200 overflow-hidden
+                ${data.cardColor === c.value ? 'scale-105 ring-2 ring-offset-2 ring-indigo-500 dark:ring-indigo-400' : 'hover:scale-105'}`}
               style={{ background: `linear-gradient(135deg, ${c.from}, ${c.to})` }}
               title={c.label}
             >
-              {data.cardColor === c.value && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <svg className="w-6 h-6 text-white drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="aspect-square flex flex-col items-center justify-center p-1">
+                {data.cardColor === c.value ? (
+                  <svg className="w-5 h-5 text-white drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                   </svg>
-                </div>
-              )}
+                ) : (
+                  <span className="text-[9px] text-white/80 font-bold text-center leading-tight px-1 drop-shadow">
+                    {c.label.replace(/^[^\s]+\s/, '')}
+                  </span>
+                )}
+              </div>
             </button>
           ))}
         </div>
