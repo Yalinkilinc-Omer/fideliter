@@ -5,98 +5,81 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
+// Palette Brume & Ardoise : #384959 · #6A89A7 · #88BDF2 · #BDDDFC
+
 export default function RegisterPage() {
   const router = useRouter()
   const supabase = createClient()
-  const [businessName, setBusinessName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [businessName, setBusinessName]   = useState('')
+  const [email, setEmail]                 = useState('')
+  const [password, setPassword]           = useState('')
+  const [loading, setLoading]             = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [error, setError]                 = useState('')
 
   const handleGoogleRegister = async () => {
-    setGoogleLoading(true)
-    setError('')
+    setGoogleLoading(true); setError('')
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/onboarding`,
-      },
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=/onboarding` },
     })
-    if (error) {
-      setError(error.message)
-      setGoogleLoading(false)
-    }
+    if (error) { setError(error.message); setGoogleLoading(false) }
   }
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
-    setError('')
+    setLoading(true); setError('')
 
-    // 1. Create user
     const { data, error: signUpError } = await supabase.auth.signUp({ email, password })
+    if (signUpError) { setError(signUpError.message); setLoading(false); return }
+    if (!data.user)  { setError('Une erreur est survenue.'); setLoading(false); return }
 
-    if (signUpError) {
-      setError(signUpError.message)
-      setLoading(false)
-      return
-    }
-
-    if (!data.user) {
-      setError('Une erreur est survenue. Veuillez réessayer.')
-      setLoading(false)
-      return
-    }
-
-    // 2. Create business (use session if available, otherwise use user id directly)
     const userId = data.session?.user?.id || data.user.id
-
-    const { error: bizError } = await supabase.from('businesses').insert({
-      owner_id: userId,
-      name: businessName,
-    })
-
-    if (bizError) {
-      // Business might already exist or RLS issue — still redirect
-      console.warn('Business insert warning:', bizError.message)
-    }
+    const { error: bizError } = await supabase.from('businesses').insert({ owner_id: userId, name: businessName })
+    if (bizError) console.warn('Business insert warning:', bizError.message)
 
     router.push('/onboarding')
     router.refresh()
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center p-4"
+      style={{ background: 'linear-gradient(135deg, #EEF4FB 0%, #BDDDFC 50%, #88BDF2 100%)' }}
+    >
+      <div className="absolute top-0 left-0 w-72 h-72 rounded-full opacity-20 pointer-events-none"
+        style={{ background: '#6A89A7', filter: 'blur(80px)', transform: 'translate(-30%, -30%)' }} />
+      <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full opacity-15 pointer-events-none"
+        style={{ background: '#384959', filter: 'blur(100px)', transform: 'translate(30%, 30%)' }} />
+
+      <div className="relative w-full max-w-md">
         {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 rounded-2xl mb-4 shadow-lg">
+        <div className="text-center mb-7">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl shadow-xl mb-4"
+            style={{ background: 'linear-gradient(135deg, #384959, #6A89A7)' }}>
             <span className="text-2xl">💎</span>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Digital Fidélité</h1>
-          <p className="text-gray-500 mt-1">Créez votre espace business</p>
+          <h1 className="text-2xl font-black" style={{ color: '#384959' }}>Digital Fidélité</h1>
+          <p className="text-sm mt-1" style={{ color: '#6A89A7' }}>Créez votre espace business</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <h2 className="text-xl font-semibold text-gray-800 mb-6">Créer un compte</h2>
+        <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl p-7"
+          style={{ border: '1px solid #BDDDFC' }}>
+
+          <h2 className="text-lg font-black mb-5" style={{ color: '#384959' }}>Créer un compte</h2>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm">
               {error}
             </div>
           )}
 
-          {/* Google Button */}
-          <button
-            type="button"
-            onClick={handleGoogleRegister}
-            disabled={googleLoading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-200 rounded-xl text-gray-700 font-medium hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed mb-4 shadow-sm"
+          {/* Google */}
+          <button type="button" onClick={handleGoogleRegister} disabled={googleLoading}
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition hover:bg-gray-50 disabled:opacity-50 shadow-sm mb-4"
+            style={{ border: '1.5px solid #BDDDFC', color: '#384959' }}
           >
-            <svg width="20" height="20" viewBox="0 0 48 48">
+            <svg width="18" height="18" viewBox="0 0 48 48">
               <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
               <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
               <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
@@ -106,69 +89,46 @@ export default function RegisterPage() {
             {googleLoading ? 'Redirection...' : 'Continuer avec Google'}
           </button>
 
-          {/* Divider */}
           <div className="flex items-center gap-3 mb-4">
-            <div className="flex-1 h-px bg-gray-200"></div>
-            <span className="text-xs text-gray-400 font-medium">ou</span>
-            <div className="flex-1 h-px bg-gray-200"></div>
+            <div className="flex-1 h-px" style={{ background: '#BDDDFC' }} />
+            <span className="text-xs font-medium" style={{ color: '#88BDF2' }}>ou</span>
+            <div className="flex-1 h-px" style={{ background: '#BDDDFC' }} />
           </div>
 
           <form onSubmit={handleRegister} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nom de votre établissement
-              </label>
-              <input
-                type="text"
-                value={businessName}
-                onChange={(e) => setBusinessName(e.target.value)}
-                required
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                placeholder="Ex: Café de la Place"
-              />
-            </div>
+            {[
+              { label: "Nom de l'établissement", value: businessName, setter: setBusinessName, type: 'text',     placeholder: 'Ex: Café de la Place' },
+              { label: 'Email',                  value: email,        setter: setEmail,        type: 'email',    placeholder: 'votre@email.com' },
+              { label: 'Mot de passe',            value: password,     setter: setPassword,     type: 'password', placeholder: 'Minimum 6 caractères', minLength: 6 },
+            ].map(f => (
+              <div key={f.label}>
+                <label className="block text-sm font-semibold mb-1.5" style={{ color: '#384959' }}>{f.label}</label>
+                <input
+                  type={f.type}
+                  value={f.value}
+                  onChange={e => f.setter(e.target.value)}
+                  required
+                  minLength={f.minLength}
+                  placeholder={f.placeholder}
+                  className="w-full px-4 py-3 rounded-xl text-sm outline-none transition"
+                  style={{ border: '1.5px solid #BDDDFC', color: '#384959' }}
+                  onFocus={e => (e.target.style.borderColor = '#6A89A7')}
+                  onBlur={e  => (e.target.style.borderColor = '#BDDDFC')}
+                />
+              </div>
+            ))}
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                placeholder="votre@email.com"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Mot de passe
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                placeholder="Minimum 6 caractères"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+            <button type="submit" disabled={loading}
+              className="w-full py-3 rounded-xl font-black text-sm text-white transition hover:opacity-90 disabled:opacity-50 shadow-lg"
+              style={{ background: 'linear-gradient(135deg, #384959, #6A89A7)', boxShadow: '0 8px 24px #6A89A730' }}
             >
               {loading ? 'Création...' : 'Créer mon compte'}
             </button>
           </form>
 
-          <p className="text-center text-sm text-gray-500 mt-6">
+          <p className="text-center text-sm mt-5" style={{ color: '#6A89A7' }}>
             Déjà un compte ?{' '}
-            <Link href="/login" className="text-indigo-600 font-medium hover:underline">
+            <Link href="/login" className="font-black hover:underline" style={{ color: '#384959' }}>
               Se connecter
             </Link>
           </p>

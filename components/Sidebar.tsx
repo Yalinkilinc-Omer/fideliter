@@ -4,21 +4,27 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
+// Palette Brume & Ardoise
+// #384959 fond sidebar (bleu pétrole foncé)
+// #6A89A7 accent / actif  (bleu ardoise moyen)
+// #88BDF2 texte clair / icônes
+// #BDDDFC très clair / hover subtil
+
 interface SidebarProps {
   businessName: string
   userEmail: string
 }
 
 const navItems = [
-  { href: '/dashboard', icon: '📊', label: 'Tableau de bord' },
-  { href: '/cards', icon: '💳', label: 'Mes cartes' },
-  { href: '/notifications', icon: '🔔', label: 'Notifications' },
-  { href: '/settings', icon: '⚙️', label: 'Paramètres' },
+  { href: '/dashboard',      icon: '📊', label: 'Tableau de bord' },
+  { href: '/cards',          icon: '💳', label: 'Mes cartes' },
+  { href: '/notifications',  icon: '🔔', label: 'Notifications' },
+  { href: '/settings',       icon: '⚙️', label: 'Paramètres' },
 ]
 
 export default function Sidebar({ businessName, userEmail }: SidebarProps) {
   const pathname = usePathname()
-  const router = useRouter()
+  const router   = useRouter()
   const supabase = createClient()
 
   const handleLogout = async () => {
@@ -28,55 +34,67 @@ export default function Sidebar({ businessName, userEmail }: SidebarProps) {
   }
 
   return (
-    <aside className="w-64 bg-white dark:bg-gray-900 border-r border-slate-200 dark:border-gray-800 flex flex-col shadow-sm">
-      {/* Logo & Brand */}
-      <div className="p-6 border-b border-slate-100 dark:border-gray-800">
+    <aside
+      className="w-64 flex flex-col shadow-xl"
+      style={{ background: 'linear-gradient(180deg, #384959 0%, #2e3d4a 100%)' }}
+    >
+      {/* ── Logo & Brand ── */}
+      <div className="px-5 py-5 border-b border-[#6A89A7]/20">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-md">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg"
+            style={{ background: 'linear-gradient(135deg, #6A89A7, #384959)' }}>
             <span className="text-lg">💎</span>
           </div>
-          <div>
-            <h1 className="font-bold text-gray-900 dark:text-white text-sm leading-tight">Digital Fidélité</h1>
-            <p className="text-xs text-indigo-600 font-medium truncate max-w-[120px]">{businessName}</p>
+          <div className="min-w-0">
+            <p className="font-black text-white text-sm leading-tight tracking-tight">Digital Fidélité</p>
+            <p className="text-[#88BDF2] text-[11px] font-medium truncate mt-0.5" style={{ maxWidth: '120px' }}>
+              {businessName}
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
+      {/* ── Navigation ── */}
+      <nav className="flex-1 px-3 py-4 space-y-0.5">
         {navItems.map((item) => {
-          const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
+          const isActive =
+            pathname === item.href ||
+            (item.href !== '/dashboard' && pathname.startsWith(item.href))
+
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+            <Link key={item.href} href={item.href}
+              className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
                 isActive
-                  ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
+                  ? 'text-white shadow-lg'
+                  : 'text-[#88BDF2] hover:text-white hover:bg-white/8'
               }`}
+              style={isActive
+                ? { background: 'linear-gradient(135deg, #6A89A7, #4d6d87)' }
+                : undefined
+              }
             >
-              <span className="text-lg">{item.icon}</span>
-              {item.label}
+              <span className="text-base">{item.icon}</span>
+              <span className="flex-1">{item.label}</span>
               {isActive && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#BDDDFC]" />
               )}
             </Link>
           )
         })}
       </nav>
 
-      {/* User section */}
-      <div className="p-4 border-t border-slate-100 dark:border-gray-800">
-        <div className="flex items-center gap-3 px-2 mb-3">
-          <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-700 dark:text-indigo-400 font-bold text-sm">
+      {/* ── User section ── */}
+      <div className="px-3 py-4 border-t border-[#6A89A7]/20">
+        <div className="flex items-center gap-2.5 px-2 mb-3">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center font-black text-sm text-[#384959] flex-shrink-0"
+            style={{ background: '#88BDF2' }}>
             {userEmail[0]?.toUpperCase()}
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 truncate flex-1">{userEmail}</p>
+          <p className="text-[11px] text-[#88BDF2] truncate flex-1">{userEmail}</p>
         </div>
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-500 dark:text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-all"
+
+        <button onClick={handleLogout}
+          className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[#88BDF2] hover:text-white hover:bg-red-500/20 rounded-xl transition-all duration-200"
         >
           <span>🚪</span>
           Déconnexion
