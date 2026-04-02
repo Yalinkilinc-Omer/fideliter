@@ -39,12 +39,15 @@ export default function Sidebar({ businessName, userEmail }: SidebarProps) {
       style={{ background: 'linear-gradient(180deg, #384959 0%, #2e3d4a 100%)' }}
     >
       {/* ── Logo & Brand ── */}
-      <div className="px-5 py-5 border-b border-[#6A89A7]/20">
+      <div className="px-5 py-4 border-b border-[#6A89A7]/20">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg"
-            style={{ background: 'linear-gradient(135deg, #6A89A7, #384959)' }}>
-            <span className="text-lg">💎</span>
-          </div>
+          <img
+            src="/kurt-logo-blanc.png"
+            alt="Kurt Digital"
+            width={38}
+            height={38}
+            style={{ borderRadius: 10, objectFit: 'contain', flexShrink: 0 }}
+          />
           <div className="min-w-0">
             <p className="font-black text-white text-sm leading-tight tracking-tight">Digital Fidélité</p>
             <p className="text-[#88BDF2] text-[11px] font-medium truncate mt-0.5" style={{ maxWidth: '120px' }}>

@@ -47,7 +47,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="text-center mb-7">
           <div className="inline-flex items-center justify-center mb-4">
-            <img src="/kurt-logo.svg" alt="Kurt Digital" width={56} height={56} style={{ borderRadius: 14, boxShadow: '0 8px 24px rgba(56,73,89,0.35)' }} />
+            <img src="/kurt-logo-bleu.png" alt="Kurt Digital" height={70} style={{ maxWidth: 200, objectFit: 'contain', filter: 'drop-shadow(0 4px 16px rgba(56,73,89,0.20))' }} />
           </div>
           <h1 className="text-2xl font-black" style={{ color: '#384959' }}>Digital Fidélité</h1>
           <p className="text-sm mt-1" style={{ color: '#6A89A7' }}>Connectez-vous à votre espace</p>

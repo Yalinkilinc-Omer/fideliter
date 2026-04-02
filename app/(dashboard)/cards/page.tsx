@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import CardQRCode from '@/components/CardQRCode'
 
+// Palette Brume & Ardoise : #384959 · #6A89A7 · #88BDF2 · #BDDDFC
+
 export default async function CardsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -19,74 +21,105 @@ export default async function CardsPage() {
     .order('created_at', { ascending: false })
 
   return (
-    <div className="p-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+    <div style={{ padding: '32px' }}>
+
+      {/* ── Header ── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32, flexWrap: 'wrap', gap: 16 }}>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Mes cartes fidélité</h1>
-          <p className="text-gray-500 mt-1">Gérez vos programmes de fidélité</p>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#384959', margin: 0 }}>Mes cartes fidélité</h1>
+          <p style={{ fontSize: 14, color: '#6A89A7', margin: '4px 0 0' }}>Gérez vos programmes de fidélité</p>
         </div>
-        <Link
-          href="/cards/new"
-          className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-medium hover:bg-indigo-700 transition shadow-sm"
-        >
-          <span>➕</span>
-          Nouvelle carte
+        <Link href="/cards/new" style={{
+          display: 'inline-flex', alignItems: 'center', gap: 8,
+          background: 'linear-gradient(135deg, #384959, #6A89A7)',
+          color: '#fff', padding: '11px 22px', borderRadius: 12,
+          fontWeight: 700, fontSize: 14, textDecoration: 'none',
+          boxShadow: '0 4px 14px rgba(56,73,89,0.30)',
+        }}>
+          <span>➕</span> Nouvelle carte
         </Link>
       </div>
 
-      {/* Cards grid */}
+      {/* ── Grille de cartes ── */}
       {cards && cards.length > 0 ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
           {cards.map((card) => {
             const customerCount = (card.customer_cards as unknown as { count: number }[])?.[0]?.count || 0
             return (
-              <div key={card.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-shadow">
-                {/* Card preview */}
-                <div
-                  className="h-36 flex items-center justify-center relative"
-                  style={{ backgroundColor: card.card_color }}
-                >
-                  <div className="text-center px-4" style={{ color: card.card_text_color }}>
-                    <p className="font-bold text-xl mb-1">{card.name}</p>
-                    <p className="text-sm opacity-80">
+              <div key={card.id} style={{
+                background: '#fff', borderRadius: 18,
+                border: '1px solid #BDDDFC',
+                overflow: 'hidden',
+                boxShadow: '0 2px 12px rgba(56,73,89,0.07)',
+                transition: 'box-shadow 0.2s',
+              }}>
+                {/* Aperçu carte */}
+                <div style={{
+                  height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  position: 'relative', overflow: 'hidden',
+                  background: card.card_color?.startsWith('#') ? `linear-gradient(135deg, ${card.card_color}, ${card.card_color}cc)` : '#384959',
+                }}>
+                  {/* Déco */}
+                  <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,0.07)', pointerEvents: 'none' }} />
+
+                  <div style={{ textAlign: 'center', padding: '0 16px', color: card.card_text_color || '#fff', position: 'relative', zIndex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 6 }}>
+                      <img src="/kurt-logo-blanc.png" alt="" width={18} height={18} style={{ objectFit: 'contain', opacity: 0.7 }} />
+                      <span style={{ fontSize: 9, opacity: 0.6, letterSpacing: 2, textTransform: 'uppercase' }}>Digital Fidélité</span>
+                    </div>
+                    <p style={{ fontWeight: 800, fontSize: 18, margin: '0 0 4px' }}>{card.name}</p>
+                    <p style={{ fontSize: 12, opacity: 0.8, margin: 0 }}>
                       {card.type === 'stamps'
                         ? `🔖 ${card.max_stamps} tampons`
                         : `⭐ ${card.points_for_reward ?? 750} pts = 1€`}
                     </p>
                   </div>
-                  <div className={`absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-medium ${
-                    card.is_active ? 'bg-white/20 text-white' : 'bg-black/20 text-white'
-                  }`}>
+
+                  {/* Badge actif */}
+                  <div style={{
+                    position: 'absolute', top: 10, right: 10,
+                    padding: '3px 10px', borderRadius: 20,
+                    fontSize: 11, fontWeight: 600,
+                    background: 'rgba(255,255,255,0.18)', color: '#fff',
+                  }}>
                     {card.is_active ? '✅ Active' : '⏸ Inactive'}
                   </div>
                 </div>
 
-                {/* Card info */}
-                <div className="p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-500">👥</span>
-                      <span className="text-sm font-medium text-gray-700">
+                {/* Infos */}
+                <div style={{ padding: '16px 18px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 14 }}>👥</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#384959' }}>
                         {customerCount} client{customerCount !== 1 ? 's' : ''}
                       </span>
                     </div>
-                    <span className="text-xs text-gray-400">
+                    <span style={{ fontSize: 12, color: '#6A89A7' }}>
                       {new Date(card.created_at).toLocaleDateString('fr-FR')}
                     </span>
                   </div>
 
                   {card.reward_description && (
-                    <p className="text-xs text-gray-500 bg-slate-50 px-3 py-2 rounded-lg mb-4 truncate">
+                    <p style={{
+                      fontSize: 12, color: '#6A89A7',
+                      background: '#EEF4FB', padding: '8px 12px',
+                      borderRadius: 8, margin: '0 0 14px',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>
                       🎁 {card.reward_description}
                     </p>
                   )}
 
-                  <div className="flex gap-2">
-                    <Link
-                      href={`/cards/${card.id}`}
-                      className="flex-1 text-center bg-indigo-50 text-indigo-700 px-3 py-2 rounded-xl text-sm font-medium hover:bg-indigo-100 transition"
-                    >
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <Link href={`/cards/${card.id}`} style={{
+                      flex: 1, textAlign: 'center',
+                      background: '#EEF4FB', color: '#384959',
+                      padding: '9px 0', borderRadius: 10,
+                      fontSize: 13, fontWeight: 700,
+                      textDecoration: 'none',
+                      border: '1px solid #BDDDFC',
+                    }}>
                       Gérer
                     </Link>
                     <CardQRCode cardId={card.id} cardName={card.name} />
@@ -97,18 +130,24 @@ export default async function CardsPage() {
           })}
         </div>
       ) : (
-        <div className="text-center py-20 bg-white rounded-2xl shadow-sm border border-slate-100">
-          <div className="text-6xl mb-4">💳</div>
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">Aucune carte créée</h3>
-          <p className="text-gray-500 mb-6 max-w-sm mx-auto">
-            Créez votre première carte de fidélité et commencez à récompenser vos clients
+        <div style={{
+          textAlign: 'center', padding: '80px 24px',
+          background: '#fff', borderRadius: 20,
+          border: '1px solid #BDDDFC',
+        }}>
+          <div style={{ fontSize: 56, marginBottom: 16 }}>💳</div>
+          <h3 style={{ fontSize: 20, fontWeight: 700, color: '#384959', margin: '0 0 8px' }}>Aucune carte créée</h3>
+          <p style={{ fontSize: 14, color: '#6A89A7', margin: '0 0 28px', maxWidth: 360, marginLeft: 'auto', marginRight: 'auto' }}>
+            Créez votre première carte de fidélité et commencez à récompenser vos clients.
           </p>
-          <Link
-            href="/cards/new"
-            className="inline-flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-indigo-700 transition"
-          >
-            <span>➕</span>
-            Créer ma première carte
+          <Link href="/cards/new" style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            background: 'linear-gradient(135deg, #384959, #6A89A7)',
+            color: '#fff', padding: '13px 28px', borderRadius: 12,
+            fontWeight: 700, fontSize: 14, textDecoration: 'none',
+            boxShadow: '0 4px 14px rgba(56,73,89,0.30)',
+          }}>
+            <span>➕</span> Créer ma première carte
           </Link>
         </div>
       )}
