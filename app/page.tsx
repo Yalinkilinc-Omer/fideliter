@@ -355,36 +355,34 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-2xl mx-auto mb-12">
             {/* Calendly */}
             <a
-              href="https://calendly.com/kurt-digital/rendez-vous"
+              href="https://calendly.com/kurt-digital-lrvr/45min"
               target="_blank"
               rel="noopener noreferrer"
               className="group flex flex-col items-center gap-3 bg-gradient-to-br from-[#1B3A8C] to-[#2E5DB5] text-white rounded-2xl p-6 hover:opacity-90 transition shadow-xl shadow-[#1B3A8C]/25 hover:scale-105 duration-300"
             >
               <span className="text-3xl">📅</span>
               <span className="font-bold text-sm">Réserver un créneau</span>
-              <span className="text-xs opacity-70">via Calendly</span>
+              <span className="text-xs opacity-70">via Calendly — 45 min</span>
             </a>
 
             {/* Email */}
             <a
-              href="mailto:Kurt.digital@outlook.fr"
+              href="mailto:kurt.digital@outlook.fr"
               className="group flex flex-col items-center gap-3 bg-gradient-to-br from-[#C9A448] to-[#a07c1e] text-white rounded-2xl p-6 hover:opacity-90 transition shadow-xl shadow-[#C9A448]/25 hover:scale-105 duration-300"
             >
               <span className="text-3xl">✉️</span>
               <span className="font-bold text-sm">Envoyer un mail</span>
-              <span className="text-xs opacity-80">Kurt.digital@outlook.fr</span>
+              <span className="text-xs opacity-80">kurt.digital@outlook.fr</span>
             </a>
 
-            {/* Site */}
+            {/* Phone */}
             <a
-              href="https://www.kurt-digital.com/#accueil"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="tel:+33767582363"
               className="group flex flex-col items-center gap-3 bg-white dark:bg-[#1B3A8C]/50 border-2 border-[#1B3A8C]/30 dark:border-[#C9A448]/30 text-[#0D1B3E] dark:text-[#F5EFE6] rounded-2xl p-6 hover:border-[#1B3A8C] dark:hover:border-[#C9A448] hover:bg-[#1B3A8C]/5 transition shadow-lg hover:scale-105 duration-300"
             >
-              <span className="text-3xl">🌐</span>
-              <span className="font-bold text-sm">Voir mon site</span>
-              <span className="text-xs text-[#4A5568] dark:text-[#A0B4CC]">kurt-digital.com</span>
+              <span className="text-3xl">📞</span>
+              <span className="font-bold text-sm">Appeler</span>
+              <span className="text-xs text-[#4A5568] dark:text-[#A0B4CC]">+33 7 67 58 23 63</span>
             </a>
           </div>
 
@@ -440,9 +438,9 @@ export default function LandingPage() {
             </div>
 
             <div className="flex items-center gap-6 text-sm text-[#4A6B9A]">
-              <a href="mailto:Kurt.digital@outlook.fr" className="hover:text-[#C9A448] transition">Kurt.digital@outlook.fr</a>
-              <a href="https://www.kurt-digital.com" target="_blank" rel="noopener noreferrer" className="hover:text-[#C9A448] transition">kurt-digital.com</a>
-              <a href="https://calendly.com/kurt-digital/rendez-vous" target="_blank" rel="noopener noreferrer" className="hover:text-[#C9A448] transition">Calendly</a>
+              <a href="mailto:kurt.digital@outlook.fr" className="hover:text-[#C9A448] transition">kurt.digital@outlook.fr</a>
+              <a href="tel:+33767582363" className="hover:text-[#C9A448] transition">+33 7 67 58 23 63</a>
+              <a href="https://calendly.com/kurt-digital-lrvr/45min" target="_blank" rel="noopener noreferrer" className="hover:text-[#C9A448] transition">Calendly</a>
             </div>
 
             <div className="flex items-center gap-4">
